@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 import {
   View,
   Text,
@@ -7,29 +7,34 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { router } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { v4 as uuidv4 } from "uuid";
-import { insertSession } from "@/lib/db";
+import * as SecureStore from "expo-secure-store";
 
 export default function NewSessionScreen() {
+  const db = useSQLiteContext(); // important
   const [name, setName] = useState("");
   const today = new Date().toISOString().slice(0, 10);
 
-  const createSession = async() => {
-    const id = uuidv4();
+  const createSession = async () => {
+    const userId = await SecureStore.getItemAsync("user_id"); // get user id from secure store
 
-    await insertSession(id, today, name);
+    try {
+      const result = await db.runAsync(
+        `INSERT INTO sessions (navn, date, user_id) VALUES (?, ?, ?)`,
+        [name, today, userId ?? null]
+      );
 
-    // We navigate to the new session detail page
-    router.push({
-      pathname: "/sessions/[id]",
-      params: {
-        id,
-        today,
-        name,
-      },
-    });
-  }
+      const id = result.lastInsertRowId;
+
+      router.push({
+        pathname: "/sessions/[id]",
+        params: { id, name, date: today },
+      });
+    } catch (error) {
+      console.error("Error creating session:", error);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -55,16 +60,14 @@ export default function NewSessionScreen() {
         <Text style={styles.buttonText}>Start sesjon</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.backBtn}
-        onPress={() => router.back()}
-      >
+      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
         <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
         <Text style={styles.backText}>Tilbake</Text>
       </TouchableOpacity>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
