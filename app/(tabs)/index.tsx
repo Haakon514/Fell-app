@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ProfileCircle from "../../components/profileCircle";
 import { useAuth } from "@/lib/auth";
@@ -11,7 +11,7 @@ export default function HomeScreen() {
       <View style={styles.container}>
         <ProfileCircle
           name={user ? user.navn : "Anonym Bruker"}
-          onPress={() => console.log("Profile pressed")}
+          onPress={() => router.push("/profile")}
         />
 
         <Link href="/volume" asChild>

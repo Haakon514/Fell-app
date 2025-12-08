@@ -1,36 +1,39 @@
-import { View, Text, Button, StyleSheet } from "react-native";
+import { View, Text, Button, StyleSheet, TouchableOpacity } from "react-native";
 import { useAuth } from "@/lib/auth";
 import { Link } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function ProfileTab() {
   const { user, logout } = useAuth();
 
-  // If not logged in -> show auth route
+  // Not logged in -> show buttons
   if (!user) {
     return (
-      <View style={{ padding: 20 }}>
-        <Text style={{ fontSize: 20 }}>Du er ikke logget inn 🔒</Text>
+      <View style={styles.container}>
+        <Text style={styles.title}>Du er ikke logget inn 🔒</Text>
 
-        <Link href="/auth/login">
-          <Text style={{ marginTop: 20, color: "blue" }}>
-            Logg inn
-          </Text>
+        <Link href="/auth/login" asChild>
+          <TouchableOpacity style={styles.button}>
+            <MaterialCommunityIcons name="login" size={22} color="#fff" />
+            <Text style={styles.buttonText}>Logg inn</Text>
+          </TouchableOpacity>
         </Link>
-        <Link href="/auth/register">
-          <Text style={{ marginTop: 20, color: "blue" }}>
-            registrer
-          </Text>
+
+        <Link href="/auth/register" asChild>
+          <TouchableOpacity style={styles.buttonSecondary}>
+            <MaterialCommunityIcons name="account-plus" size={22} color="#fff" />
+            <Text style={styles.buttonText}>Registrer</Text>
+          </TouchableOpacity>
         </Link>
       </View>
     );
   }
 
-  // If logged in -> show profile info
+  // Logged in -> show profile
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Hei, {user.navn ?? "Ukjent"} 👋</Text>
 
-      {/* INFO FIELDS */}
       <View style={styles.infoBox}>
         <Text style={styles.label}>E-post:</Text>
         <Text style={styles.value}>{user.email}</Text>
@@ -71,7 +74,10 @@ export default function ProfileTab() {
         )}
       </View>
 
-      <Button title="Logg ut" onPress={logout} />
+      <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+        <MaterialCommunityIcons name="logout" size={20} color="#fff" />
+        <Text style={styles.logoutText}>Logg ut</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -108,5 +114,44 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "500",
   },
-});
 
+  button: {
+    flexDirection: "row",
+    backgroundColor: "#2e7d32",
+    padding: 14,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+
+  buttonSecondary: {
+    flexDirection: "row",
+    backgroundColor: "#4169e1",
+    padding: 14,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  buttonText: {
+    color: "#fff",
+    fontSize: 18,
+    marginLeft: 10,
+  },
+
+  logoutBtn: {
+    flexDirection: "row",
+    backgroundColor: "#a62828",
+    padding: 14,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  logoutText: {
+    color: "#fff",
+    fontSize: 18,
+    marginLeft: 10,
+  },
+});
