@@ -12,15 +12,17 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
 import { hashPassword } from "./register";
 import { User } from "@/types/user";
+import { useAuth } from "@/lib/auth";
 
 export default function LoginScreen() {
   const db = useSQLiteContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useAuth();
 
   const submitLogin = async () => {
     try {
-      const user: User | null | undefined = await db.getFirstAsync(
+      const user: User | null | undefined = await db.getFirstAsync<User>(
         `SELECT * FROM users WHERE email = ?`,
         [email]
       );
@@ -37,7 +39,10 @@ export default function LoginScreen() {
         return;
       }
 
-      Alert.alert("Logget inn!", `Velkommen tilbake 😄`);
+      // user in logged in state:
+      login(user);
+
+      Alert.alert("Logget inn!", `Velkommen tilbake ${user.navn}`);
 
       // reset form
       setEmail("");

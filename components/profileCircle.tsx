@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 
 type Props = {
-  name: string;
+  name: string | null;
   onPress?: () => void;
   image?: string; // optional user avatar url
 };
