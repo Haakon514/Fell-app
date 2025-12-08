@@ -60,22 +60,6 @@ export default function RootLayout() {
             name="(tabs)"
             options={{ headerShown: false }}
           />
-
-          {/* Other pages outside tabs */}
-          <Stack.Screen
-            name="volume"
-            options={{ title: "Trevolum" }}
-          />
-
-          <Stack.Screen
-            name="sessions/new"
-            options={{ title: "Ny sesjon" }}
-          />
-
-          <Stack.Screen
-            name="sessions/[id]"
-            options={{ title: "Sesjon" }}
-          />
         </Stack>
       </SQLiteProvider>
     </AuthProvider>
