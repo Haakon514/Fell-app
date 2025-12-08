@@ -30,7 +30,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </Link>
 
-        <Link href="/sessions" asChild>
+        <Link href="/sessions/[id]" asChild>
           <TouchableOpacity style={styles.card}>
             <MaterialCommunityIcons
               name="calendar-clock"

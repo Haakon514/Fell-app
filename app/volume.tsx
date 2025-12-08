@@ -1,71 +1,136 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Keyboard,
+  KeyboardAvoidingView,
+  FlatList,
+  Platform,
 } from "react-native";
-import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+type Calc = {
+  diameter: string;
+  length: string;
+  sortimentCode: string;
+  result: string;
+};
 
 export default function VolumeScreen() {
   const [diameter, setDiameter] = useState("");
-  const [length, setHeight] = useState("");
+  const [length, setLength] = useState("");
+  const [sortimentCode, setSortimentCode] = useState("");
   const [result, setResult] = useState<string | null>(null);
+  const [calculationsList, setCalculationsList] = useState<Calc[]>([]);
 
   const calculate = () => {
-    const diameterCm = parseFloat(diameter);
-    const lengthInMeters = parseFloat(length);
+    const d = parseFloat(diameter);
+    const l = parseFloat(length);
 
-    if (isNaN(diameterCm) || isNaN(lengthInMeters)) return;
+    if (isNaN(d) || isNaN(l)) {
+      setResult(null);
+      return;
+    }
 
-    const radiusCm = diameterCm / 2 / 100;
-    const volume = Math.PI * radiusCm * radiusCm * lengthInMeters;
-
+    const radius = d / 2 / 100;
+    const volume = Math.PI * radius * radius * l;
     setResult(volume.toFixed(3) + " m³");
-    Keyboard.dismiss();
+  };
+
+  useEffect(() => {
+    calculate();
+  }, [diameter, length]);
+
+  const handleAddToList = () => {
+    if (!result) return;
+
+    const entry = { diameter, length, sortimentCode, result };
+    setCalculationsList((prev) => [...prev, entry]);
+
+    setDiameter("");
+    setLength("");
+    setSortimentCode("");
+    setResult(null);
+  };
+
+  const handleRemoveFromList = (index: number) => {
+    setCalculationsList((list) => list.filter((_, i) => i !== index));
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tre-volum kalkulator 🌲</Text>
-
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
       <TextInput
         style={styles.input}
-        placeholder="Diameter (cm)"
+        placeholder="Sortiment kode"
         placeholderTextColor="#bbb"
-        value={diameter}
-        onChangeText={setDiameter}
+        value={sortimentCode}
+        onChangeText={setSortimentCode}
         keyboardType="numeric"
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Høyde (m)"
-        placeholderTextColor="#bbb"
-        value={length}
-        onChangeText={setHeight}
-        keyboardType="numeric"
+      <View style={styles.metricsContainer}>
+        <TextInput
+          style={styles.metricsInput}
+          placeholder="Diameter (cm)"
+          placeholderTextColor="#bbb"
+          value={diameter}
+          onChangeText={setDiameter}
+          keyboardType="numeric"
+        />
+
+        <TextInput
+          style={styles.metricsInput}
+          placeholder="Lengde (m)"
+          placeholderTextColor="#bbb"
+          value={length}
+          onChangeText={setLength}
+          keyboardType="numeric"
+        />
+      </View>
+
+      <View style={styles.resultBox}>
+        <Text style={styles.resultText}>{result}</Text>
+        <Text style={{ color: "#949494ff" }}>Totalt volum (m³)</Text>
+      </View>
+
+      <View style={styles.buttonContainer}>
+        {/* ADD */}
+        <TouchableOpacity style={styles.button} onPress={handleAddToList}>
+          <MaterialCommunityIcons name="plus" size={30} color="#fff" />
+          <Text style={styles.buttonLabel}>Legg til i liste</Text>
+        </TouchableOpacity>
+
+        {/* "MENU" BUTTON (placeholder) */}
+        <TouchableOpacity style={styles.addButton} onPress={() => setCalculationsList([])}>
+          <MaterialCommunityIcons name="menu" size={30} color="#1c28b4ff" />
+        </TouchableOpacity>
+      </View>
+
+      <FlatList
+        data={calculationsList}
+        keyExtractor={(_, index) => index.toString()}
+        renderItem={({ item, index }) => (
+          <View style={styles.listItem}>
+            <Text style={styles.listText}>
+              D{item.diameter}cm * L{item.length}m = {item.result} (SK: {item.sortimentCode})
+            </Text>
+
+            <TouchableOpacity onPress={() => handleRemoveFromList(index)}>
+              <MaterialCommunityIcons
+                name="trash-can-outline"
+                size={22}
+                color="#ff6666"
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       />
-
-      <TouchableOpacity style={styles.button} onPress={calculate}>
-        <MaterialCommunityIcons name="calculator" size={24} color="#fff" />
-        <Text style={styles.buttonText}>Beregn</Text>
-      </TouchableOpacity>
-
-      {result && (
-        <View style={styles.resultBox}>
-          <Text style={styles.resultText}>{result}</Text>
-        </View>
-      )}
-
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
-        <Text style={styles.backText}>Tilbake</Text>
-      </TouchableOpacity>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -74,14 +139,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#1a1a1a",
     padding: 20,
-    justifyContent: "center",
   },
-  title: {
-    fontSize: 28,
+  metricsContainer: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 14,
+  },
+  metricsInput: {
+    flex: 1,
+    backgroundColor: "#333",
     color: "#fff",
-    fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 30,
+    borderRadius: 12,
+    padding: 14,
+    fontSize: 18,
+    borderWidth: 1,
+    borderColor: "#444",
   },
   input: {
     backgroundColor: "#333",
@@ -93,42 +165,56 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#444",
   },
-  button: {
-    flexDirection: "row",
-    backgroundColor: "#2e7d32",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 20,
-  },
-  buttonText: {
-    marginLeft: 10,
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
   resultBox: {
-    marginTop: 10,
     backgroundColor: "#444",
-    padding: 16,
+    padding: 18,
     borderRadius: 12,
-    alignItems: "center",
+    marginBottom: 20,
   },
   resultText: {
     color: "#fff",
     fontSize: 22,
     fontWeight: "bold",
   },
-  backBtn: {
-    marginTop: 40,
+  buttonContainer: {
     flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 20,
   },
-  backText: {
-    marginLeft: 8,
+  button: {
+    backgroundColor: "#1c28b4ff",
+    padding: 12,
+    paddingHorizontal: 50,
+    borderRadius: 12,
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 10,
+  },
+  buttonLabel: {
     color: "#fff",
     fontSize: 18,
+    fontWeight: "600",
   },
+  addButton: {
+    backgroundColor: "#a0a0a0ff",
+    padding: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: "center",
+  },
+  listItem: {
+    backgroundColor: "#333",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  listText: {
+    color: "#fff",
+    fontSize: 16,
+    flex: 1,
+    marginRight: 10,
+  }
 });
