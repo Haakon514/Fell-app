@@ -1,70 +1,84 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   FlatList,
+  TouchableOpacity,
 } from "react-native";
 import { useLocalSearchParams, router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSQLiteContext } from "expo-sqlite";
 
 type Calc = {
-  id: string;
-  volume: number;
+  id: number;
+  sortiment_kode: number;
+  diameter: number;
+  lengde: number;
+  volum: number;
+  timestamp: string;
 };
 
 export default function SessionDetailScreen() {
-  const { id, date, name } = useLocalSearchParams();
+  const db = useSQLiteContext();
+  const { id: sessionId, date, name } = useLocalSearchParams();
 
   const [calculations, setCalculations] = useState<Calc[]>([]);
 
-  const totalVolume = calculations.reduce((sum, c) => sum + c.volume, 0);
+  // 👉 Load from SQLite
+  async function loadData() {
+    const rows = await db.getAllAsync<Calc>(
+      `SELECT * FROM treecalculations WHERE session_id = ? ORDER BY id DESC`,
+      [sessionId]
+    );
 
-  const addCalculation = () => {
-    // navigate to calculator, then come back with result
-    router.push({
-      pathname: "/volume",
-      params: { sessionId: id },
-    });
-  };
+    setCalculations(rows);
+  }
+
+  useEffect(() => {
+    loadData(); // Load on mount
+  }, []);
+
+  // 👉 Calculate total
+  const totalVolume = calculations.reduce((sum, c) => sum + c.volum, 0);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{name || "Hogst-sesjon"}</Text>
-
+      <Text style={styles.title}>{name || "Sesjon"}</Text>
       <Text style={styles.date}>📅 {date}</Text>
 
+      {/* LIST */}
       <FlatList
-        style={{ maxHeight: 250 }}
         data={calculations}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={
-          <Text style={styles.empty}>Ingen kalkulasjoner enda</Text>
+          <Text style={styles.empty}>Ingen kalkulasjoner i denne sesjonen</Text>
         }
         renderItem={({ item }) => (
           <View style={styles.row}>
             <MaterialCommunityIcons name="tree" size={22} color="#6fbf73" />
-            <Text style={styles.rowText}>
-              {item.volume.toFixed(3)} m³
+
+            <View style={{ marginLeft: 12 }}>
+              <Text style={styles.rowText}>
+                Ø {item.diameter}cm × {item.lengde}m
+              </Text>
+              <Text style={styles.small}>
+                SK {item.sortiment_kode} — {item.timestamp}
+              </Text>
+            </View>
+
+            <Text style={styles.volume}>
+              {item.volum.toFixed(3)} m³
             </Text>
           </View>
         )}
       />
 
-      <Text style={styles.total}>
-        Total: {totalVolume.toFixed(3)} m³
-      </Text>
+      {/* TOTAL */}
+      <Text style={styles.total}>Total: {totalVolume.toFixed(3)} m³</Text>
 
-      <TouchableOpacity style={styles.button} onPress={addCalculation}>
-        <MaterialCommunityIcons name="plus-circle" size={26} color="#fff" />
-        <Text style={styles.buttonText}>Legg til kalkulasjon</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.backBtn}
-        onPress={() => router.back()}
-      >
+      {/* BACK */}
+      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
         <MaterialCommunityIcons name="arrow-left" size={22} color="#fff" />
         <Text style={styles.backText}>Tilbake</Text>
       </TouchableOpacity>
@@ -102,7 +116,16 @@ const styles = StyleSheet.create({
   },
   rowText: {
     color: "#fff",
-    marginLeft: 12,
+    fontSize: 16,
+  },
+  small: {
+    color: "#aaa",
+    fontSize: 13,
+  },
+  volume: {
+    marginLeft: "auto",
+    color: "#6fbf73",
+    fontWeight: "bold",
     fontSize: 18,
   },
   total: {
@@ -111,21 +134,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     textAlign: "center",
-  },
-  button: {
-    flexDirection: "row",
-    backgroundColor: "#2e7d32",
-    padding: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-    marginTop: 30,
-  },
-  buttonText: {
-    marginLeft: 10,
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
   },
   backBtn: {
     marginTop: 30,

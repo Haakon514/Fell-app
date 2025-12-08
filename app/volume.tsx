@@ -10,6 +10,8 @@ import {
   Platform,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useCreateSession } from "@/lib/useCreateSession";
+import { useSQLiteContext } from "expo-sqlite";
 
 type Calc = {
   diameter: string;
@@ -19,6 +21,9 @@ type Calc = {
 };
 
 export default function VolumeScreen() {
+  const [sessionId, setSessionId] = useState<number | null>(null);
+  const db = useSQLiteContext();
+  const createSession = useCreateSession();
   const [diameter, setDiameter] = useState("");
   const [length, setLength] = useState("");
   const [sortimentCode, setSortimentCode] = useState("");
@@ -43,11 +48,31 @@ export default function VolumeScreen() {
     calculate();
   }, [diameter, length]);
 
-  const handleAddToList = () => {
+  const handleAddToList = async () => {
     if (!result) return;
+
+    let id: number | null = sessionId;
+    if (id === null) {
+      id = await createSession(); // must return a number
+      setSessionId(id);
+    }
 
     const entry = { diameter, length, sortimentCode, result };
     setCalculationsList((prev) => [...prev, entry]);
+
+    // 3. SAVE TO DATABASE
+    db.runAsync(
+      `INSERT INTO treecalculations (session_id, sortiment_kode, diameter, lengde, volum, timestamp)
+      VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        sortimentCode,
+        diameter,
+        length,
+        result,
+        new Date().toISOString(),
+      ]
+  );
 
     setDiameter("");
     setLength("");
@@ -105,7 +130,7 @@ export default function VolumeScreen() {
           <Text style={styles.buttonLabel}>Legg til i liste</Text>
         </TouchableOpacity>
 
-        {/* "MENU" BUTTON (placeholder) */}
+        {/* "MENU" BUTTON (clear list) */}
         <TouchableOpacity style={styles.addButton} onPress={() => setCalculationsList([])}>
           <MaterialCommunityIcons name="menu" size={30} color="#1c28b4ff" />
         </TouchableOpacity>

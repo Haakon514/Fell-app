@@ -22,14 +22,6 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </Link>
 
-        <Link href="/sessions/new" asChild>
-          <TouchableOpacity style={styles.card}>
-            <MaterialCommunityIcons name="plus-circle" size={40} color="#fff" />
-            <Text style={styles.cardTitle}>Ny sesjon</Text>
-            <Text style={styles.cardDescription}>Start en hogst-dag</Text>
-          </TouchableOpacity>
-        </Link>
-
         <Link href="/sessions/[id]" asChild>
           <TouchableOpacity style={styles.card}>
             <MaterialCommunityIcons
