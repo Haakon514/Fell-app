@@ -1,11 +1,15 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Link } from "expo-router";
-import { MaterialCommunityIcons } from "@expo/vector-icons";;
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import ProfileCircle from "../../components/profileCircle";
 
 export default function HomeScreen() {
   return (
       <View style={styles.container}>
-        <Text style={styles.title}>Skogshjelper 🌲</Text>
+        <ProfileCircle
+          name="Ola Nordmann"
+          onPress={() => console.log("Profile pressed")}
+        />
 
         <Link href="/volume" asChild>
           <TouchableOpacity style={styles.card}>

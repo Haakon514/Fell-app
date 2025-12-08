@@ -11,26 +11,59 @@ import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import * as SecureStore from "expo-secure-store";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Crypto from "expo-crypto";
+
+  async function generateSalt() {
+    return await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      Math.random().toString()
+    );
+  }
+
+  export async function hashPassword(password: string, salt: string) {
+    return await Crypto.digestStringAsync(
+      Crypto.CryptoDigestAlgorithm.SHA256,
+      password + salt
+    );
+  } 
 
 export default function NewProfileScreen() {
   const db = useSQLiteContext();
 
   const [navn, setNavn] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [adresse, setAdresse] = useState("");
   const [kommuneNr, setKommuneNr] = useState("");
   const [gårdsNr, setGårdsNr] = useState("");
   const [bruksNr, setBruksNr] = useState("");
   const [leverandørNr, setLeverandørNr] = useState("");
 
+  const resetForm = () => {
+    setNavn("");
+    setEmail("");
+    setPassword("");
+    setAdresse("");
+    setKommuneNr("");
+    setGårdsNr("");
+    setBruksNr("");
+    setLeverandørNr("");
+  };
+
   const createUser = async () => {
+
+    const salt = await generateSalt();
+    const passwordHash = await hashPassword(password, salt); // Placeholder password
+
     try {
       const result = await db.runAsync(
-        `INSERT INTO users (navn, email, addresse, kommune_nummer, gårds_nummer, bruks_nummer, leverandør_nummer)
-         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO users (navn, email, passord_hash, salt, addresse, kommune_nummer, gårds_nummer, bruks_nummer, leverandør_nummer)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           navn,
           email,
+          passwordHash,
+          salt,
           adresse,
           kommuneNr,
           gårdsNr,
@@ -43,6 +76,8 @@ export default function NewProfileScreen() {
 
       // Store for later use
       await SecureStore.setItemAsync("user_id", newUserId);
+
+      resetForm();
 
       router.replace("/"); // back to home
 
@@ -57,6 +92,7 @@ export default function NewProfileScreen() {
 
       <Field label="Navn" value={navn} onChange={setNavn} />
       <Field label="E-post" value={email} onChange={setEmail} />
+      <Field label="Passord" value={password} onChange={setPassword} />
       <Field label="Adresse" value={adresse} onChange={setAdresse} />
       <Field label="Kommune nr" value={kommuneNr} onChange={setKommuneNr} />
       <Field label="Gårds nr" value={gårdsNr} onChange={setGårdsNr} />
