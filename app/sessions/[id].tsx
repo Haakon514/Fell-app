@@ -10,49 +10,44 @@ import { useLocalSearchParams, router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
 
-type Calc = {
+type Session = {
   id: number;
-  sortiment_kode: number;
-  diameter: number;
-  lengde: number;
-  volum: number;
-  timestamp: string;
+  navn: string;
+  date: string;
+  user_id: number;
 };
 
 export default function SessionDetailScreen() {
   const db = useSQLiteContext();
-  const { id: sessionId, date, name } = useLocalSearchParams();
 
-  const [calculations, setCalculations] = useState<Calc[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([]);
 
   // 👉 Load from SQLite
   async function loadData() {
-    const rows = await db.getAllAsync<Calc>(
-      `SELECT * FROM treecalculations WHERE session_id = ? ORDER BY id DESC`,
-      [sessionId]
+    const rows = await db.getAllAsync<Session>(
+      `SELECT * FROM sessions ORDER BY id DESC`
     );
 
-    setCalculations(rows);
+    console.log("Loaded calculations:", rows);
+
+    setSessions(rows);
   }
 
   useEffect(() => {
     loadData(); // Load on mount
   }, []);
 
-  // 👉 Calculate total
-  const totalVolume = calculations.reduce((sum, c) => sum + c.volum, 0);
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{name || "Sesjon"}</Text>
-      <Text style={styles.date}>📅 {date}</Text>
+      <Text style={styles.title}>{"Sesjoner"}</Text>
+      <Text style={styles.date}>📅</Text>
 
       {/* LIST */}
       <FlatList
-        data={calculations}
+        data={sessions}
         keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={
-          <Text style={styles.empty}>Ingen kalkulasjoner i denne sesjonen</Text>
+          <Text style={styles.empty}>Ingen sessjoner</Text>
         }
         renderItem={({ item }) => (
           <View style={styles.row}>
@@ -60,22 +55,18 @@ export default function SessionDetailScreen() {
 
             <View style={{ marginLeft: 12 }}>
               <Text style={styles.rowText}>
-                Ø {item.diameter}cm × {item.lengde}m
+                Navn {item.navn} × Dato {item.date}
               </Text>
               <Text style={styles.small}>
-                SK {item.sortiment_kode} — {item.timestamp}
+                UserId {item.user_id} | SessionId {item.id}
               </Text>
             </View>
-
-            <Text style={styles.volume}>
-              {item.volum.toFixed(3)} m³
-            </Text>
           </View>
         )}
       />
 
-      {/* TOTAL */}
-      <Text style={styles.total}>Total: {totalVolume.toFixed(3)} m³</Text>
+      {/* TOTAL
+      <Text style={styles.total}>Total: {totalVolume.toFixed(3)} m³</Text>*/}
 
       {/* BACK */}
       <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>

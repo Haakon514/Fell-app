@@ -12,6 +12,7 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCreateSession } from "@/lib/useCreateSession";
 import { useSQLiteContext } from "expo-sqlite";
+import * as SecureStore from "expo-secure-store";
 
 type Calc = {
   diameter: string;
@@ -51,10 +52,20 @@ export default function VolumeScreen() {
   const handleAddToList = async () => {
     if (!result) return;
 
-    let id: number | null = sessionId;
-    if (id === null) {
-      id = await createSession(); // must return a number
-      setSessionId(id);
+    if (!sessionId) {
+      // 1. CHECK FOR STORED SESSION ID
+      let storedId = await SecureStore.getItemAsync("sessionId");
+
+      if (storedId) {
+        setSessionId(parseInt(storedId));
+      } else {
+        // 2. CREATE NEW SESSION IF NONE EXISTS
+        const id = await createSession();
+        setSessionId(id);
+        storedId = id.toString();
+        await SecureStore.setItemAsync("sessionId", storedId);
+        console.log(id, " session id is created");
+      }
     }
 
     const entry = { diameter, length, sortimentCode, result };
@@ -65,14 +76,14 @@ export default function VolumeScreen() {
       `INSERT INTO treecalculations (session_id, sortiment_kode, diameter, lengde, volum, timestamp)
       VALUES (?, ?, ?, ?, ?, ?)`,
       [
-        id,
+        sessionId,
         sortimentCode,
         diameter,
         length,
         result,
         new Date().toISOString(),
       ]
-  );
+    );
 
     setDiameter("");
     setLength("");
