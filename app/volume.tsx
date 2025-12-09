@@ -107,8 +107,8 @@ export default function VolumeScreen() {
     >
 
       <View>
-        <Text style={{ color: "#818bd7ff", fontSize: 15, marginBottom: 10 }}>
-          {sessionId ? `Kalkulasjoner lagret i Økt: ${date_today}` : "Ny økt vil bli opprettet ved første kalkulasjon"}
+        <Text style={{ color: "#afb5e3ff", fontSize: 14, marginBottom: 10 }}>
+          {sessionId ? `Kalkulasjoner lagres i økt ${date_today}` : "Ny økt vil bli opprettet automatisk ved første kalkulasjon eller ny dato"}
         </Text>
       </View>
 
@@ -149,13 +149,13 @@ export default function VolumeScreen() {
       <View style={styles.buttonContainer}>
         {/* ADD */}
         <TouchableOpacity style={styles.button} onPress={handleAddToList}>
-          <MaterialCommunityIcons name="plus" size={25} color="#fff" />
-          <Text style={styles.buttonLabel}>Legg til i liste</Text>
+          <MaterialCommunityIcons name="plus" size={30} color="#fff" />
+          <Text style={styles.buttonLabel}>Legg til kalkulasjon</Text>
         </TouchableOpacity>
 
         {/* "MENU" BUTTON (clear list) */}
         <TouchableOpacity style={styles.addButton} onPress={() => setCalculationsList([])}>
-          <MaterialCommunityIcons name="menu" size={30} color="#1c28b4ff" />
+          <MaterialCommunityIcons name="trash-can-outline" size={30} color="#1c28b4ff" />
         </TouchableOpacity>
       </View>
 
@@ -172,7 +172,7 @@ export default function VolumeScreen() {
               <MaterialCommunityIcons
                 name="trash-can-outline"
                 size={22}
-                color="#ff6666"
+                color="#6f2727ff"
               />
             </TouchableOpacity>
           </View>
@@ -230,9 +230,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: "#1c28b4ff",
+    backgroundColor: "#040831ff",
     padding: 10,
-    paddingHorizontal: 50,
+    paddingHorizontal: 28,
     borderRadius: 12,
     alignItems: "center",
     flexDirection: "row",
@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   addButton: {
-    backgroundColor: "#a0a0a0ff",
+    backgroundColor: "#07022dff",
     padding: 10,
     paddingHorizontal: 20,
     borderRadius: 12,
