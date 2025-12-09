@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { use, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -30,6 +30,21 @@ export default function VolumeScreen() {
   const [sortimentCode, setSortimentCode] = useState("");
   const [result, setResult] = useState<string | null>(null);
   const [calculationsList, setCalculationsList] = useState<Calc[]>([]);
+  const date_today = new Date().toISOString().slice(0, 10);
+
+  async function createOrGetSession() {
+    // try to get an existing session from SecureStore
+    const existingSession = await SecureStore.getItemAsync("sessionId");
+
+    // if not found, create new session
+    if (!existingSession) {
+      setSessionId(await createSession());
+      return;
+    }
+
+    // if found, set sessionId to the existing session
+    setSessionId(parseInt(existingSession));
+  }
 
   const calculate = () => {
     const d = parseFloat(diameter);
@@ -49,24 +64,14 @@ export default function VolumeScreen() {
     calculate();
   }, [diameter, length]);
 
+  useEffect(() => {
+    if (!sessionId){
+      createOrGetSession();
+    }
+  }, []);
+
   const handleAddToList = async () => {
     if (!result) return;
-
-    if (!sessionId) {
-      // 1. CHECK FOR STORED SESSION ID
-      let storedId = await SecureStore.getItemAsync("sessionId");
-
-      if (storedId) {
-        setSessionId(parseInt(storedId));
-      } else {
-        // 2. CREATE NEW SESSION IF NONE EXISTS
-        const id = await createSession();
-        setSessionId(id);
-        storedId = id.toString();
-        await SecureStore.setItemAsync("sessionId", storedId);
-        console.log(id, " session id is created");
-      }
-    }
 
     const entry = { diameter, length, sortimentCode, result };
     setCalculationsList((prev) => [...prev, entry]);
@@ -81,7 +86,7 @@ export default function VolumeScreen() {
         diameter,
         length,
         result,
-        new Date().toISOString(),
+        new Date().toISOString().slice(0, 10),
       ]
     );
 
@@ -100,6 +105,13 @@ export default function VolumeScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
+
+      <View>
+        <Text style={{ color: "#818bd7ff", fontSize: 15, marginBottom: 10 }}>
+          {sessionId ? `Kalkulasjoner lagret i Økt: ${date_today}` : "Ny økt vil bli opprettet ved første kalkulasjon"}
+        </Text>
+      </View>
+
       <TextInput
         style={styles.input}
         placeholder="Sortiment kode"
@@ -131,13 +143,13 @@ export default function VolumeScreen() {
 
       <View style={styles.resultBox}>
         <Text style={styles.resultText}>{result}</Text>
-        <Text style={{ color: "#949494ff" }}>Totalt volum (m³)</Text>
+        <Text style={{ color: "#949494ff", fontSize: 12 }}>Totalt volum (m³)</Text>
       </View>
 
       <View style={styles.buttonContainer}>
         {/* ADD */}
         <TouchableOpacity style={styles.button} onPress={handleAddToList}>
-          <MaterialCommunityIcons name="plus" size={30} color="#fff" />
+          <MaterialCommunityIcons name="plus" size={25} color="#fff" />
           <Text style={styles.buttonLabel}>Legg til i liste</Text>
         </TouchableOpacity>
 
@@ -186,8 +198,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#333",
     color: "#fff",
     borderRadius: 12,
-    padding: 14,
-    fontSize: 18,
+    padding: 12,
+    fontSize: 15,
     borderWidth: 1,
     borderColor: "#444",
   },
@@ -195,15 +207,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#333",
     color: "#fff",
     borderRadius: 12,
-    padding: 14,
-    fontSize: 18,
+    padding: 12,
+    fontSize: 15,
     marginBottom: 14,
     borderWidth: 1,
     borderColor: "#444",
   },
   resultBox: {
     backgroundColor: "#444",
-    padding: 18,
+    padding: 10,
     borderRadius: 12,
     marginBottom: 20,
   },
@@ -219,12 +231,11 @@ const styles = StyleSheet.create({
   },
   button: {
     backgroundColor: "#1c28b4ff",
-    padding: 12,
+    padding: 10,
     paddingHorizontal: 50,
     borderRadius: 12,
     alignItems: "center",
     flexDirection: "row",
-    gap: 10,
   },
   buttonLabel: {
     color: "#fff",
@@ -233,8 +244,8 @@ const styles = StyleSheet.create({
   },
   addButton: {
     backgroundColor: "#a0a0a0ff",
-    padding: 12,
-    paddingHorizontal: 16,
+    padding: 10,
+    paddingHorizontal: 20,
     borderRadius: 12,
     alignItems: "center",
   },

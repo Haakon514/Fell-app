@@ -6,9 +6,10 @@ import {
   FlatList,
   TouchableOpacity,
 } from "react-native";
-import { useLocalSearchParams, router } from "expo-router";
+import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
+import SessionCalculations from "@/components/sessionsCalculations";
 
 type Session = {
   id: number;
@@ -21,58 +22,62 @@ export default function SessionDetailScreen() {
   const db = useSQLiteContext();
 
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [selectedSession, setSelectedSession] = useState<Session | null>(null);
 
   // 👉 Load from SQLite
   async function loadData() {
     const rows = await db.getAllAsync<Session>(
       `SELECT * FROM sessions ORDER BY id DESC`
     );
-
-    console.log("Loaded calculations:", rows);
-
     setSessions(rows);
   }
 
   useEffect(() => {
-    loadData(); // Load on mount
+    loadData();
   }, []);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{"Sesjoner"}</Text>
-      <Text style={styles.date}>📅</Text>
+      <Text style={styles.title}>Sesjoner</Text>
 
-      {/* LIST */}
+      {/* SESSION LIST */}
       <FlatList
         data={sessions}
+        style={{ maxHeight: 100 }}
         keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={
           <Text style={styles.empty}>Ingen sessjoner</Text>
         }
         renderItem={({ item }) => (
-          <View style={styles.row}>
-            <MaterialCommunityIcons name="tree" size={22} color="#6fbf73" />
+          <TouchableOpacity
+            style={[
+              styles.row,
+              selectedSession?.id === item.id && styles.selectedRow,
+            ]}
+            onPress={() => setSelectedSession(item)}
+          >
+            <MaterialCommunityIcons name="pine-tree" size={22} color="#6fbf73" />
 
             <View style={{ marginLeft: 12 }}>
               <Text style={styles.rowText}>
-                Navn {item.navn} × Dato {item.date}
+                {item.navn || "Uten navn"}
               </Text>
-              <Text style={styles.small}>
-                UserId {item.user_id} | SessionId {item.id}
-              </Text>
+              <Text style={styles.small}>📅 {item.date}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
       />
 
-      {/* TOTAL
-      <Text style={styles.total}>Total: {totalVolume.toFixed(3)} m³</Text>*/}
+      {/* SHOW CALCULATIONS FOR SELECTED SESSION */}
+      {selectedSession && (
+        <View style={{ flex: 1, marginTop: 20 }}>
+          <Text style={styles.subtitle}>
+            Kalkulasjoner for: {selectedSession.navn || selectedSession.date}
+          </Text>
 
-      {/* BACK */}
-      <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-        <MaterialCommunityIcons name="arrow-left" size={22} color="#fff" />
-        <Text style={styles.backText}>Tilbake</Text>
-      </TouchableOpacity>
+          <SessionCalculations sessionId={selectedSession.id} />
+        </View>
+      )}
     </View>
   );
 }
@@ -87,10 +92,13 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     color: "#fff",
+    marginBottom: 10,
   },
-  date: {
-    color: "#aaa",
-    marginBottom: 20,
+  subtitle: {
+    fontSize: 18,
+    color: "#a4a0a0ff",
+    marginBottom: 10,
+    marginTop: 10,
   },
   empty: {
     color: "#aaa",
@@ -105,6 +113,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 8,
   },
+  selectedRow: {
+    backgroundColor: "#445",
+  },
   rowText: {
     color: "#fff",
     fontSize: 16,
@@ -112,19 +123,6 @@ const styles = StyleSheet.create({
   small: {
     color: "#aaa",
     fontSize: 13,
-  },
-  volume: {
-    marginLeft: "auto",
-    color: "#6fbf73",
-    fontWeight: "bold",
-    fontSize: 18,
-  },
-  total: {
-    marginTop: 20,
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "bold",
-    textAlign: "center",
   },
   backBtn: {
     marginTop: 30,
