@@ -11,7 +11,7 @@ export default function HomeScreen() {
       <View style={styles.container}>
         
         <TouchableOpacity
-          style={{ position: "absolute", top: 0, left: 0, zIndex: 10 }}
+          style={{ position: "absolute", top: 10, left: 0, zIndex: 10 }}
           >
             <ProfileCircle
               name={user ? user.navn : null}
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 90,
     paddingHorizontal: 20,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: "#ffffffff",
   },
 
   title: {
