@@ -1,14 +1,19 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import WoodAvatar from "@/assets/avatars/wood-sunset.svg";
+import WoodAvatar2 from "@/assets/avatars/wood-purple.svg";
+import WoodAvatar3 from "@/assets/avatars/wood-orange.svg";
+import WoodAvatar4 from "@/assets/avatars/axe-green.svg";
+import WoodAvatar5 from "@/assets/avatars/axe-orange.svg";
+
 
 type Props = {
   name: string | null;
+  leverandørNr?: number | null;
   onPress?: () => void;
-  image?: string; // optional user avatar url
 };
 
-export default function ProfileCircle({ name, onPress, image }: Props) {
-  // Extract initials (first two letters)
+export default function ProfileCircle({ name, leverandørNr, onPress }: Props) {
   const initials = name
     ? name
         .split(" ")
@@ -18,17 +23,30 @@ export default function ProfileCircle({ name, onPress, image }: Props) {
         .toUpperCase()
     : "??";
 
+  const hasUser = !!name;
+
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
-      {image ? (
-        <Image source={{ uri: image }} style={styles.avatar} />
-      ) : (
-        <View style={styles.placeholder}>
-          <Text style={styles.initials}>{initials}</Text>
-        </View>
-      )}
 
-      <Text style={styles.name}>{name || "Ukjent bruker"}</Text>
+      {/* --- CIRCLE --- */}
+      <View style={styles.circle}>
+        {hasUser ? (
+          <WoodAvatar width={36} height={36} />
+        ) : (
+          <Text style={styles.initials}>{initials}</Text>
+        )}
+      </View>
+
+      {/* --- TEXT --- */}
+      <View style={{ alignItems: "flex-start", gap: 2 }}>
+        <Text style={styles.name}>@{name || "Ukjent bruker"}</Text>
+        {leverandørNr && (
+          <Text style={styles.leverandørNr}>
+            Leverandør: {leverandørNr}
+          </Text>
+        )}
+      </View>
+
     </TouchableOpacity>
   );
 }
@@ -43,32 +61,33 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
 
-  avatar: {
+  circle: {
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: "#444",
-  },
-
-  placeholder: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "#444",
+    backgroundColor: "#4e4b4bff",
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
   },
 
   initials: {
     color: "#fff",
     fontSize: 20,
-    fontWeight: "600",
+    fontWeight: "800",
   },
 
   name: {
     marginLeft: 10,
-    fontSize: 18,
-    color: "#fff",
+    fontSize: 15,
+    color: "#ccc",
     fontWeight: "500",
+  },
+
+  leverandørNr: {
+    marginLeft: 10,
+    fontSize: 15,
+    color: "#fff",
+    fontWeight: "800",
   },
 });

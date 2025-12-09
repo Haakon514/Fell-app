@@ -9,16 +9,30 @@ export default function HomeScreen() {
 
   return (
       <View style={styles.container}>
-        <ProfileCircle
-          name={user ? user.navn : "Anonym Bruker"}
-          onPress={() => router.push("/profile")}
-        />
+        
+        <TouchableOpacity
+          style={{ position: "absolute", top: 0, left: 0, zIndex: 10 }}
+          >
+            <ProfileCircle
+              name={user ? user.navn : null}
+              leverandørNr={user ? user.leverandør_nummer : null}
+              onPress={() => router.push("/profile")}
+          />
+        </TouchableOpacity>
 
         <Link href="/volume" asChild>
           <TouchableOpacity style={styles.card}>
             <MaterialCommunityIcons name="ruler" size={40} color="#fff" />
-            <Text style={styles.cardTitle}>Tre-volum</Text>
-            <Text style={styles.cardDescription}>Regn ut volum på trær</Text>
+            <Text style={styles.cardTitle}>volum kalkulator</Text>
+            <Text style={styles.cardDescription}>Regn ut volum på hogsten</Text>
+          </TouchableOpacity>
+        </Link>
+
+        <Link href="/reglement" asChild>
+          <TouchableOpacity style={styles.card}>
+            <MaterialCommunityIcons name="book" size={40} color="#fff" />
+            <Text style={styles.cardTitle}>Reglement</Text>
+            <Text style={styles.cardDescription}>Se hva du har lov til å hogge</Text>
           </TouchableOpacity>
         </Link>
 
@@ -41,7 +55,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
+    paddingTop: 90,
     paddingHorizontal: 20,
     backgroundColor: "#1a1a1a",
   },
@@ -50,12 +64,12 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 30,
+    marginBottom: 10,
     textAlign: "center",
   },
 
   card: {
-    backgroundColor: "#2e7d32",
+    backgroundColor: "#3117b3ff",
     padding: 20,
     borderRadius: 18,
     marginBottom: 20,
