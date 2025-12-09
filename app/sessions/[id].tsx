@@ -62,7 +62,7 @@ export default function SessionDetailScreen() {
               <Text style={styles.rowText}>
                 {item.navn || "Uten navn"}
               </Text>
-              <Text style={styles.small}>📅 {item.date}</Text>
+              <Text style={styles.small}>📅 {item.date} Bruker: {item.user_id ? item.user_id : 'Anonym Bruker'}</Text>
             </View>
           </TouchableOpacity>
         )}
