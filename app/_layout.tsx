@@ -1,5 +1,5 @@
 import { Stack } from "expo-router";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { SQLiteProvider } from "expo-sqlite";
 import { AuthProvider } from "@/lib/auth";
@@ -56,13 +56,12 @@ export default function RootLayout() {
         }}
         options={{ useNewConnection: false }}
       >
-        <SafeAreaProvider>
+        <SafeAreaView style={{ flex: 1, backgroundColor: "#111" }}  edges={["bottom"]} >
           <StatusBar style="light" />
 
           <Stack
             screenOptions={{
               headerShown: false,
-              animation: "fade",
               contentStyle: {
                 backgroundColor: "transparent", // 🔑 let screens paint their own background
               },
@@ -70,7 +69,7 @@ export default function RootLayout() {
           >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           </Stack>
-        </SafeAreaProvider>
+        </SafeAreaView>
       </SQLiteProvider>
     </AuthProvider>
   );

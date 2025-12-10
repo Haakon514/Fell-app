@@ -5,15 +5,23 @@ import {
   StyleSheet,
   SectionList,
   TouchableOpacity,
+  LayoutAnimation,
+  Platform,
+  UIManager,
 } from "react-native";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
 import { Session } from "@/types/session";
 
+if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
 export default function SessionsScreen() {
   const db = useSQLiteContext();
   const [sessions, setSessions] = useState<Session[]>([]);
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
   function formatDateWithWeekday(dateString: string) {
     const d = new Date(dateString);
@@ -38,6 +46,16 @@ export default function SessionsScreen() {
     loadData();
   }, []);
 
+  // toggle open/close of a section header
+  function toggleSection(title: string) {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setOpenSections((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
+  }
+
+  // group by date into sections
   const sections = useMemo(() => {
     const grouped: Record<string, Session[]> = {};
 
@@ -59,8 +77,7 @@ export default function SessionsScreen() {
     <View style={styles.container}>
       {/* CUSTOM TOP BAR */}
       <View style={styles.topBar}>
-        <MaterialCommunityIcons name="forest" size={28} color="#4ade80" />
-        <Text style={styles.topBarTitle}>Økter</Text>
+        <Text style={styles.topBarTitle}>Lagrede Kalkulasjoner</Text>
       </View>
 
       {/* LIST */}
@@ -68,37 +85,53 @@ export default function SessionsScreen() {
         sections={sections}
         keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={<Text style={styles.empty}>Ingen økter</Text>}
-        stickySectionHeadersEnabled={true}
-        renderSectionHeader={({ section: { title } }) => (
-          <View style={styles.headerCard}>
-            <Text style={styles.headerCardText}>
-              {formatDateWithWeekday(title)}
-            </Text>
-          </View>
-        )}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.card}
-            onPress={() => router.push(`/sessions/${item.id}`)}
-          >
-            <MaterialCommunityIcons name="pine-tree" size={26} color="#4ade80" />
+        stickySectionHeadersEnabled={false}
+        renderSectionHeader={({ section: { title } }) => {
+          const isOpen = openSections[title];
 
-            <View style={{ marginLeft: 12, flex: 1 }}>
-              <Text style={styles.cardTitle}>
-                {item.navn || "Uten navn"}
+          return (
+            <TouchableOpacity
+              onPress={() => toggleSection(title)}
+              style={styles.headerCard}
+            >
+              <Text style={styles.headerCardText}>
+                {formatDateWithWeekday(title)}
               </Text>
-              <Text style={styles.cardSubtitle}>
-                Bruker: {item.user_id || "Anonym"}
-              </Text>
-            </View>
 
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={28}
-              color="#888"
-            />
-          </TouchableOpacity>
-        )}
+              <MaterialCommunityIcons
+                name={isOpen ? "chevron-up" : "chevron-down"}
+                size={24}
+                color="#4ade80"
+              />
+            </TouchableOpacity>
+          );
+        }}
+        renderItem={({ item, section }) => {
+          if (!openSections[section.title]) return null;
+
+          return (
+            <TouchableOpacity
+              style={styles.card}
+              onPress={() => router.push(`/sessions/${item.id}`)}
+            >
+    
+              <View style={{ marginLeft: 12, flex: 1 }}>
+                <Text style={styles.cardTitle}>
+                  {item.navn || "Uten navn"}
+                </Text>
+                <Text style={styles.cardSubtitle}>
+                  Bruker: {item.user_id || "Anonym"}
+                </Text>
+              </View>
+
+              <MaterialCommunityIcons
+                name="chevron-right"
+                size={28}
+                color="#888"
+              />
+            </TouchableOpacity>
+          );
+        }}
       />
     </View>
   );
@@ -119,7 +152,7 @@ const styles = StyleSheet.create({
   },
   topBarTitle: {
     fontSize: 28,
-    color: "#fff",
+    color: "#4ade80",
     fontWeight: "700",
     marginLeft: 10,
   },
@@ -133,11 +166,14 @@ const styles = StyleSheet.create({
   /* DATE HEADER */
   headerCard: {
     backgroundColor: "#1f2937",
-    paddingVertical: 6,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
     marginTop: 14,
     marginBottom: 8,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   headerCardText: {
     color: "#4ade80",

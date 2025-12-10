@@ -5,26 +5,20 @@ import { Octicons } from "@expo/vector-icons";
 export default function TabLayout() {
   return (
     <Tabs
-    
       screenOptions={{
-        tabBarShowLabel: false,
         headerShown: false,
+        tabBarShowLabel: false,
+
+        tabBarHideOnKeyboard: true,
+
         tabBarStyle: {
           position: "absolute",
-
-          backgroundColor: "#fff",
-
-          // 🔑 Rounded only on top
-          borderTopLeftRadius: 28,
-          borderTopRightRadius: 28,
-          borderBottomLeftRadius: 0,
-          borderBottomRightRadius: 0,
-
-          height: 60, // give it thickness
+          bottom: 0, // 👈 sit at the bottom
+          backgroundColor: "#111",
+          height: 60,
           paddingBottom: 10,
           paddingTop: 10,
-
-          borderWidth: 0, // remove border
+          borderColor: "#111"
         },
       }}
     >

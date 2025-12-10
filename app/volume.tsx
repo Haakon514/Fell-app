@@ -166,7 +166,7 @@ export default function VolumeScreen() {
     >
 
       <View>
-        <Text style={{ color: "#afb5e3ff", fontSize: 14, marginBottom: 10 }}>
+        <Text style={{ color: "#4ade80", fontSize: 14, marginBottom: 10 }}>
           {sessionId ? `Kalkulasjoner lagres i økt ${date_today}` : "Ny økt vil bli opprettet automatisk ved første kalkulasjon eller ny dato"}
         </Text>
       </View>
@@ -223,7 +223,7 @@ export default function VolumeScreen() {
 
         {/* "MENU" BUTTON (clear list) */}
         <TouchableOpacity style={styles.addButton} onPress={() => setShowModalToDeleteList(true)}>
-          <MaterialCommunityIcons name="trash-can-outline" size={30} color="#1c28b4ff" />
+          <MaterialCommunityIcons name="trash-can-outline" size={30} color="#5d1c0fff" />
         </TouchableOpacity>
       </View>
 
@@ -240,7 +240,7 @@ export default function VolumeScreen() {
               <MaterialCommunityIcons
                 name="trash-can-outline"
                 size={22}
-                color="#6f2727ff"
+                color="#3bc56dff"
               />
             </TouchableOpacity>
           </View>
@@ -268,7 +268,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#1a1a1a",
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 40,
   },
   metricsContainer: {
     flexDirection: "row",
@@ -312,7 +313,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: "#040831ff",
+    backgroundColor: "#0e3602ff",
     padding: 10,
     paddingHorizontal: 28,
     borderRadius: 12,
@@ -325,7 +326,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   addButton: {
-    backgroundColor: "#07022dff",
+    backgroundColor: "#504e4eff",
     padding: 10,
     paddingHorizontal: 20,
     borderRadius: 12,

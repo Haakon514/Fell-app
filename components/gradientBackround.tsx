@@ -6,12 +6,13 @@ export default function GradientBackground({ children }) {
   return (
     <LinearGradient
       colors={[
-        "rgba(15, 32, 39, 0.95)", 
-        "rgba(32, 58, 67, 0.9)", 
-        "rgba(72, 121, 142, 0.85)"
+        "#111",
+        "#111",
+        "#1a1d1aff",
+        "#39D98A"
       ]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+      start={{ x: 0.5, y: 1 }}
+      end={{ x: 0.5, y: 0 }}
       style={styles.container}
     >
       {children}

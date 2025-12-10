@@ -27,6 +27,22 @@ export default function HomeScreen() {
 
         <ScrollView contentContainerStyle={styles.cardsContainer}>
 
+          <Link href="/nylig" asChild>
+            <TouchableOpacity style={styles.recentCard}>
+              {/* background behind blur */}
+              <View style={styles.recentCardBackground} />
+
+              {/* blur overlay */}
+              <BlurView
+                intensity={40}
+                tint="dark"
+                style={styles.recentBlur}
+              >
+                <RecentNumbers value={150} label={"kubikk"} />
+              </BlurView>
+            </TouchableOpacity>
+          </Link>
+
           {/* BIG CARD */}
           <Link href="/volume" asChild>
             <TouchableOpacity style={styles.bigCard}>
@@ -54,22 +70,6 @@ export default function HomeScreen() {
             </Link>
 
           </View>
-
-          <Link href="/nylig" asChild>
-            <TouchableOpacity style={styles.recentCard}>
-              {/* background behind blur */}
-              <View style={styles.recentCardBackground} />
-
-              {/* blur overlay */}
-              <BlurView
-                intensity={40}
-                tint="dark"
-                style={styles.recentBlur}
-              >
-                <RecentNumbers value={150} label={"kubikk"} />
-              </BlurView>
-            </TouchableOpacity>
-          </Link>
 
         </ScrollView>
       </GradientBackground>
