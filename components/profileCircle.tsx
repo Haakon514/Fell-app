@@ -31,7 +31,7 @@ export default function ProfileCircle({ name, leverandørNr, onPress }: Props) {
       {/* --- CIRCLE --- */}
       <View style={styles.circle}>
         {hasUser ? (
-          <WoodAvatar width={36} height={36} />
+          <WoodAvatar width={30} height={30} />
         ) : (
           <Text style={styles.initials}>{initials}</Text>
         )}

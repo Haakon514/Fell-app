@@ -31,6 +31,7 @@ export default function SessionCalculations({ sessionId }: Props) {
         [sessionId]
       );
       setCalculations(rows);
+      console.log("Loaded calculations:", rows);
     } catch (err) {
       console.error("Failed to get calculations:", err);
     } finally {

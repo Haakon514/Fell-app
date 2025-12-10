@@ -46,7 +46,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </Link>
 
-            <Link href="/sessions/[id]" asChild>
+            <Link href="/sessions" asChild>
               <TouchableOpacity style={styles.smallCard}>
                 <MaterialCommunityIcons name="calendar-clock" size={30} color="#fff" />
                 <Text style={styles.smallTitle}>Økter</Text>
@@ -85,14 +85,14 @@ const styles = StyleSheet.create({
   profileWrapper: {
     position: "absolute",
     top: 20,
-    left: 20,
+    left: 0,
     zIndex: 100,
   },
 
   cardsContainer: {
-    top: 100,
+    flex : 1,
+    justifyContent: "center",
     paddingHorizontal: 20,
-    paddingBottom: 60,
     gap: 20,
   },
 
