@@ -1,39 +1,50 @@
-import { Tabs } from 'expo-router';
-
-import Ionicons from '@expo/vector-icons/Ionicons';
-
+import { Tabs } from "expo-router";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { Octicons } from "@expo/vector-icons";
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#503dffff',
-        headerStyle: {
-          backgroundColor: '#25292e',
-        },
-        headerShadowVisible: false,
+        tabBarActiveTintColor: "#1a185bff",
         header: () => null,
-        headerTintColor: '#fff',
+        tabBarShowLabel: false,
+
         tabBarStyle: {
-          backgroundColor: '#ffffffff',
+          position: "absolute",
+          bottom: 50,
+          paddingHorizontal: 20,
+          marginHorizontal: 20,
+
+          height: 65,
+          borderRadius: 35,
+
+          backgroundColor: "#ffffffff",
+
+          borderWidth: 2,
+          borderColor: "#d5d5d8ff",
+
+          // Shadow / elevation
+          shadowColor: "#000",
+          shadowOpacity: 0.15,
+          shadowRadius: 10,
+          elevation: 6,
+
+          paddingBottom: 10,
+          paddingTop: 10,
         },
-    }}
+      }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: "Home",
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="volume"
-        options={{
-          title: 'TreeVolume',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} color={color} size={24}/>
+            <Octicons
+              name={focused ? "home-fill" : "home"}
+              color={color}
+              size={26}
+            />
           ),
         }}
       />
@@ -45,7 +56,7 @@ export default function TabLayout() {
             <Ionicons
               name={focused ? "person" : "person-outline"}
               color={color}
-              size={24}
+              size={26}
             />
           ),
         }}
