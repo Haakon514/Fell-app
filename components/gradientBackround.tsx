@@ -6,10 +6,10 @@ export default function GradientBackground({ children }) {
   return (
     <LinearGradient
       colors={[
-        "#111",
-        "#111",
-        "#1a1d1aff",
-        "#39D98A"
+        "#ffffffff",
+        "#ffffffff",
+        "#ffffffff",
+        "#5B78F4"
       ]}
       start={{ x: 0.5, y: 1 }}
       end={{ x: 0.5, y: 0 }}

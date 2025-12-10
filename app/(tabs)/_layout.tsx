@@ -12,13 +12,15 @@ export default function TabLayout() {
         tabBarHideOnKeyboard: true,
 
         tabBarStyle: {
+          shadowColor: "#5B78F4",
           position: "absolute",
-          bottom: 0, // 👈 sit at the bottom
-          backgroundColor: "#111",
+          margin: 20, // 👈 sit at the bottom
+          backgroundColor: "#ffffffff",
           height: 60,
           paddingBottom: 10,
           paddingTop: 10,
-          borderColor: "#111"
+          borderColor: "#f5f6fcff",
+          borderRadius: 100
         },
       }}
     >

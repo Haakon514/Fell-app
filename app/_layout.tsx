@@ -56,7 +56,7 @@ export default function RootLayout() {
         }}
         options={{ useNewConnection: false }}
       >
-        <SafeAreaView style={{ flex: 1, backgroundColor: "#111" }}  edges={["bottom"]} >
+        <SafeAreaView style={{ flex: 1 }}  edges={["bottom"]} >
           <StatusBar style="light" />
 
           <Stack
