@@ -54,7 +54,7 @@ export default function ProfileCircle({ name, leverandørNr, onPress }: Props) {
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: 20,
+    top: 40,
     left: 20,
     flexDirection: "row",
     alignItems: "center",

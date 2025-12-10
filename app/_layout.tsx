@@ -1,4 +1,6 @@
 import { Stack } from "expo-router";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { StatusBar } from "expo-status-bar";
 import { SQLiteProvider } from "expo-sqlite";
 import { AuthProvider } from "@/lib/auth";
 
@@ -54,13 +56,21 @@ export default function RootLayout() {
         }}
         options={{ useNewConnection: false }}
       >
-        <Stack>
-          {/* Tabs entry point */}
-          <Stack.Screen
-            name="(tabs)"
-            options={{ headerShown: false }}
-          />
-        </Stack>
+        <SafeAreaProvider>
+          <StatusBar style="light" />
+
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              animation: "fade",
+              contentStyle: {
+                backgroundColor: "transparent", // 🔑 let screens paint their own background
+              },
+            }}
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          </Stack>
+        </SafeAreaProvider>
       </SQLiteProvider>
     </AuthProvider>
   );

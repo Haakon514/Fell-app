@@ -5,33 +5,26 @@ import { Octicons } from "@expo/vector-icons";
 export default function TabLayout() {
   return (
     <Tabs
+    
       screenOptions={{
-        tabBarActiveTintColor: "#1a185bff",
-        header: () => null,
         tabBarShowLabel: false,
-
+        headerShown: false,
         tabBarStyle: {
           position: "absolute",
-          bottom: 50,
-          paddingHorizontal: 20,
-          marginHorizontal: 20,
 
-          height: 65,
-          borderRadius: 35,
+          backgroundColor: "#fff",
 
-          backgroundColor: "#ffffffff",
+          // 🔑 Rounded only on top
+          borderTopLeftRadius: 28,
+          borderTopRightRadius: 28,
+          borderBottomLeftRadius: 0,
+          borderBottomRightRadius: 0,
 
-          borderWidth: 2,
-          borderColor: "#d5d5d8ff",
-
-          // Shadow / elevation
-          shadowColor: "#000",
-          shadowOpacity: 0.15,
-          shadowRadius: 10,
-          elevation: 6,
-
+          height: 60, // give it thickness
           paddingBottom: 10,
           paddingTop: 10,
+
+          borderWidth: 0, // remove border
         },
       }}
     >
@@ -52,6 +45,7 @@ export default function TabLayout() {
         name="profile/index"
         options={{
           title: "Profil",
+          headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "person" : "person-outline"}

@@ -84,7 +84,6 @@ const styles = StyleSheet.create({
 
   profileWrapper: {
     position: "absolute",
-    top: 20,
     left: 0,
     zIndex: 100,
   },
