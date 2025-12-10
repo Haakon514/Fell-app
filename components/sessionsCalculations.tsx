@@ -9,32 +9,24 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
+import { TreeCalculation } from "@/types/treeCalculation";
 
 type Props = {
   sessionId: number;
   userId?: number | null;
 };
 
-type Calc = {
-  id: number;
-  sortiment_kode: number;
-  diameter: number;
-  lengde: number;
-  volum: number;
-  timestamp: string;
-};
-
 export default function SessionCalculations({ sessionId }: Props) {
   const db = useSQLiteContext();
 
   const [loading, setLoading] = useState(true);
-  const [calculations, setCalculations] = useState<Calc[]>([]);
+  const [calculations, setCalculations] = useState<TreeCalculation[]>([]);
   const [totalVolume, setTotalVolume] = useState(0);
 
   // 👉 Load data
   async function loadData() {
     try {
-      const rows = await db.getAllAsync<Calc>(
+      const rows = await db.getAllAsync<TreeCalculation>(
         `SELECT * FROM treecalculations WHERE session_id = ? ORDER BY id DESC`,
         [sessionId]
       );

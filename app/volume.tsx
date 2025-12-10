@@ -15,6 +15,7 @@ import { useSQLiteContext } from "expo-sqlite";
 import * as SecureStore from "expo-secure-store";
 import ConfirmDeleteModal from "@/components/modals/confirmDeleteModal";
 import { Picker } from "@react-native-picker/picker";
+import { useQueries } from "@/lib/useQueries";
 
 type Calc = {
   diameter: string;
@@ -29,6 +30,7 @@ export default function VolumeScreen() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const db = useSQLiteContext();
+  const { getSessionById } = useQueries();
   const createSession = useCreateSession();
   const [diameter, setDiameter] = useState("");
   const [length, setLength] = useState("");
@@ -55,15 +57,37 @@ export default function VolumeScreen() {
   async function createOrGetSession() {
     // try to get an existing session from SecureStore
     const existingSession = await SecureStore.getItemAsync("sessionId");
+    console.log("Existing session from SecureStore:", existingSession);
 
-    // if not found, create new session
+    // if no existing session found, create new session
     if (!existingSession) {
-      setSessionId(await createSession());
-      return;
-    }
 
-    // if found, set sessionId to the existing session
-    setSessionId(parseInt(existingSession));
+      const createdId = await createSession();
+      setSessionId(createdId);
+
+      await SecureStore.setItemAsync("sessionId", createdId.toString());
+
+      return;
+    } else {
+      // get the existing session from DB to check date
+      const session = await getSessionById(parseInt(existingSession));
+
+      // (creates a new session every day)
+      if (session?.date !== date_today) {
+
+        console.log("Creating new session for new date");
+        const createdId = await createSession();
+        setSessionId(createdId);
+
+        await SecureStore.setItemAsync("sessionId", createdId.toString());
+
+        return;
+      }
+
+      // if dates match, use existing session
+      console.log("Using existing session from today");
+      setSessionId(parseInt(existingSession));
+    }
   }
 
   function confirmDeleteIndex(index: number) {

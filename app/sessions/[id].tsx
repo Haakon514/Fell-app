@@ -10,13 +10,7 @@ import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
 import SessionCalculations from "@/components/sessionsCalculations";
-
-type Session = {
-  id: number;
-  navn: string;
-  date: string;
-  user_id: number;
-};
+import { Session } from "@/types/session";
 
 export default function SessionDetailScreen() {
   const db = useSQLiteContext();
