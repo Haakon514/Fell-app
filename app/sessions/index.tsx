@@ -112,7 +112,6 @@ const styles = StyleSheet.create({
     paddingTop: 40,
     paddingBottom: 20,
   },
-
   topBar: {
     flexDirection: "row",
     alignItems: "center",
