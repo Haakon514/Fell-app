@@ -14,6 +14,7 @@ import { useCreateSession } from "@/lib/useCreateSession";
 import { useSQLiteContext } from "expo-sqlite";
 import * as SecureStore from "expo-secure-store";
 import ConfirmDeleteModal from "@/components/modals/confirmDeleteModal";
+import { Picker } from "@react-native-picker/picker";
 
 type Calc = {
   diameter: string;
@@ -33,8 +34,21 @@ export default function VolumeScreen() {
   const [length, setLength] = useState("");
   const [sortimentCode, setSortimentCode] = useState("");
   const [result, setResult] = useState<string | null>(null);
+  const [volume, setVolume] = useState<number | null>(null);
   const [calculationsList, setCalculationsList] = useState<Calc[]>([]);
   const date_today = new Date().toISOString().slice(0, 10);
+
+  const SORTIMENT_LIST = [
+    { label: "Sagtømmer Gran (SG)", value: "SG" },
+    { label: "Sagtømmer Furu (SF)", value: "SF" },
+    { label: "Sagtømmer Lauv (SL)", value: "SL" },
+    { label: "Massevirke Gran (MG)", value: "MG" },
+    { label: "Massevirke Furu (MF)", value: "MF" },
+    { label: "Massevirke Lauv (ML)", value: "ML" },
+    { label: "Bio Gran/Furu/Lauv (GFL)", value: "GFL" },
+    { label: "Pallevirke Gran (PG)", value: "PG" },
+    { label: "Pallevirke Furu (PF)", value: "PF" },
+  ];
 
   /* helper functions bellow */
 
@@ -82,6 +96,7 @@ export default function VolumeScreen() {
     const radius = d / 2 / 100;
     const volume = Math.PI * radius * radius * l;
     setResult(volume.toFixed(3) + " m³");
+    setVolume(volume);
   };
 
   const handleAddToList = async () => {
@@ -99,15 +114,13 @@ export default function VolumeScreen() {
         sortimentCode,
         diameter,
         length,
-        result,
+        volume,
         new Date().toISOString().slice(0, 10),
       ]
     );
 
     setDiameter("");
     setLength("");
-    setSortimentCode("");
-    setResult(null);
   };
 
   /* end of helper functions */
@@ -134,14 +147,23 @@ export default function VolumeScreen() {
         </Text>
       </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Sortiment kode"
-        placeholderTextColor="#bbb"
-        value={sortimentCode}
-        onChangeText={setSortimentCode}
-        keyboardType="numeric"
-      />
+      {/* SORTIMENT DROPDOWN */}
+      <View style={styles.dropdownBox}>
+        <Text style={styles.dropdownLabel}>Sortiment (kode)</Text>
+
+        <Picker
+          selectedValue={sortimentCode}
+          onValueChange={(val) => setSortimentCode(val)}
+          dropdownIconColor="#fff"
+          style={styles.dropdown}
+        >
+          <Picker.Item label="Velg sortiment" value=""/>
+
+          {SORTIMENT_LIST.map((s) => (
+            <Picker.Item key={s.value} label={s.label} value={s.value} />
+          ))}
+        </Picker>
+      </View>
 
       <View style={styles.metricsContainer}>
         <TextInput
@@ -299,5 +321,21 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flex: 1,
     marginRight: 10,
-  }
+  },
+  dropdownBox: {
+    backgroundColor: "#333",
+    borderRadius: 12,
+    marginBottom: 14,
+    paddingHorizontal: 6,
+  },
+  dropdownLabel: {
+    color: "#bbb",
+    fontSize: 14,
+    marginLeft: 8,
+    marginTop: 6,
+  },
+  dropdown: {
+    color: "#fff",
+    width: "100%",
+  },
 });

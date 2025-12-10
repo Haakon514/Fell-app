@@ -29,6 +29,7 @@ export default function SessionCalculations({ sessionId }: Props) {
 
   const [loading, setLoading] = useState(true);
   const [calculations, setCalculations] = useState<Calc[]>([]);
+  const [totalVolume, setTotalVolume] = useState(0);
 
   // 👉 Load data
   async function loadData() {
@@ -49,8 +50,11 @@ export default function SessionCalculations({ sessionId }: Props) {
     loadData();
   }, [sessionId]);
 
-  // 👉 Total volume
-  //const totalVolume = calculations.reduce((sum, c) => sum + c.volum, 0);
+  // set total volume whenever calculations change
+  useEffect(() => {
+    const total = calculations.reduce((sum, c) => sum + (Number(c.volum) || 0), 0);
+    setTotalVolume(total);
+  }, [calculations]);
 
   if (loading) {
     return (
@@ -63,7 +67,7 @@ export default function SessionCalculations({ sessionId }: Props) {
   return (
     <View style={styles.container}>
     
-    <Text style={styles.title}>Kalkulasjoner ({calculations.length})</Text>
+    <Text style={styles.title}>Kalkulasjoner ({calculations.length}) Total {totalVolume.toFixed(2)} m³</Text>
 
     <FlatList
       style={{ flex: 1 }}              // 👈 ADD THIS
@@ -95,7 +99,7 @@ export default function SessionCalculations({ sessionId }: Props) {
 
               </View>
                 <Text style={styles.volume}>
-                  {volume.toFixed(3)} m³
+                  {volume.toFixed(2)} m³
                 </Text>
               </View>
         );
