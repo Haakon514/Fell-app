@@ -8,9 +8,9 @@ import GradientBackground from "@/components/gradientBackround";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 
-const BLUE_CARD = ["#7BA7FF", "#4C6FE8"];
-const PINK_CARD = ["#FFB4D6", "#FF6F91"];
-const GREEN_CARD = ["#A8E6CF", "#56C596"];
+const BLUE_CARD = ["#f8ecdcff", "#e3d8ceff"];
+const PINK_CARD = ["#f8ecdcff", "#e3d0c0ff"];
+const GREEN_CARD = ["#f8ecdcff", "#d4bfacff"];
 
 export default function HomeScreen() {
   const { user } = useAuth();
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
 recentCard: {
   borderRadius: 26,
   overflow: "hidden",     // MUST for BlurView to reveal the blur correctly
-  top: 80,
+  top: 110,
   minHeight: 140,
   position: "relative",
 
