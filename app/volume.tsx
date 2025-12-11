@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -16,12 +16,14 @@ import * as SecureStore from "expo-secure-store";
 import ConfirmDeleteModal from "@/components/modals/confirmDeleteModal";
 import { Picker } from "@react-native-picker/picker";
 import { useQueries } from "@/lib/useQueries";
+import { Session } from "@/types/session";
 
 type Calc = {
   diameter: string;
   length: string;
   sortimentCode: string;
   result: string;
+  volume: number;
 };
 
 export default function VolumeScreen() {
@@ -29,6 +31,7 @@ export default function VolumeScreen() {
   const [showModalToDeleteList, setShowModalToDeleteList] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [sessionId, setSessionId] = useState<number | null>(null);
+  const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const db = useSQLiteContext();
   const { getSessionById, updateSessionTotalVolume } = useQueries();
   const createSession = useCreateSession();
@@ -69,6 +72,7 @@ export default function VolumeScreen() {
     } else {
       // get the existing session from DB to check date
       const session = await getSessionById(parseInt(existingSession));
+      setCurrentSession(session);
 
       // (creates a new session every day)
       if (session?.date !== date_today) {
@@ -91,18 +95,38 @@ export default function VolumeScreen() {
     setShowModalToDeleteIndex(true);
   }
 
+  // handle delete
+
   function handleDelete() {
     if (selectedIndex !== null) {
-      // remove from list
+      const item = calculationsList[selectedIndex];
+
+      setCurrentSession((prev) => ({
+        ...prev!,
+        total_volume: (prev?.total_volume || 0) - item.volume,
+      }));
+
       setCalculationsList((list) => list.filter((_, i) => i !== selectedIndex));
     }
     setShowModalToDeleteIndex(false);
   }
 
   function handleDeleteHoleList() {
+    const totalRemoved = calculationsList.reduce(
+      (sum, item) => sum + item.volume,
+      0
+    );
+
+    setCurrentSession((prev) => ({
+      ...prev!,
+      total_volume: (prev?.total_volume || 0) - totalRemoved,
+    }));
+
     setCalculationsList([]);
     setShowModalToDeleteList(false);
   }
+
+  // handle calculation
 
   const calculate = () => {
     const d = parseFloat(diameter);
@@ -122,8 +146,13 @@ export default function VolumeScreen() {
   const handleAddToList = async () => {
     if (!result) return;
 
-    const entry = { diameter, length, sortimentCode, result };
+    const entry = { diameter, length, sortimentCode, result, volume };
     setCalculationsList((prev) => [...prev, entry]);
+
+    setCurrentSession((prev) => ({
+      ...prev!,
+      total_volume: (prev?.total_volume || 0) + volume!,
+    }));
 
     // 3. SAVE TO DATABASE
     db.runAsync(
@@ -221,8 +250,17 @@ export default function VolumeScreen() {
 
         {/* "MENU" BUTTON (clear list) */}
         <TouchableOpacity style={styles.addButton} onPress={() => setShowModalToDeleteList(true)}>
-          <MaterialCommunityIcons name="trash-can-outline" size={30} color="#5d1c0fff" />
+          <MaterialCommunityIcons name="trash-can-outline" size={30} color="#ff5533ff" />
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.summaryCard}>
+        <Text style={styles.summaryLabel}>
+          Totalt volum for {date_today}
+        </Text>
+        <Text style={styles.summaryValue}>
+          {currentSession?.total_volume.toFixed(2)} m³
+        </Text>
       </View>
 
       <FlatList
@@ -238,7 +276,7 @@ export default function VolumeScreen() {
               <MaterialCommunityIcons
                 name="trash-can-outline"
                 size={22}
-                color="#3bc56dff"
+                color="#ff5533ff"
               />
             </TouchableOpacity>
           </View>
@@ -265,100 +303,139 @@ export default function VolumeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#1a1a1a",
+    backgroundColor: "#0f0f0f",
     paddingHorizontal: 20,
-    paddingVertical: 40,
+    paddingVertical: 36,
   },
-  metricsContainer: {
-    flexDirection: "row",
-    gap: 10,
-    marginBottom: 14,
-  },
-  metricsInput: {
-    flex: 1,
-    backgroundColor: "#333",
-    color: "#fff",
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 15,
-    borderWidth: 1,
-    borderColor: "#444",
-  },
-  input: {
-    backgroundColor: "#333",
-    color: "#fff",
-    borderRadius: 12,
-    padding: 12,
-    fontSize: 15,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: "#444",
-  },
-  resultBox: {
-    backgroundColor: "#444",
-    padding: 10,
-    borderRadius: 12,
-    marginBottom: 20,
-  },
-  resultText: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "bold",
-  },
-  buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  button: {
-    backgroundColor: "#0e3602ff",
-    padding: 10,
-    paddingHorizontal: 28,
-    borderRadius: 12,
-    alignItems: "center",
-    flexDirection: "row",
-  },
-  buttonLabel: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  addButton: {
-    backgroundColor: "#504e4eff",
-    padding: 10,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-  listItem: {
-    backgroundColor: "#333",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 8,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  listText: {
-    color: "#fff",
-    fontSize: 16,
-    flex: 1,
-    marginRight: 10,
-  },
+
+  /* --- INPUT AREA --- */
+
   dropdownBox: {
-    backgroundColor: "#333",
-    borderRadius: 12,
-    marginBottom: 14,
-    paddingHorizontal: 6,
+    backgroundColor: "#151515",
+    borderRadius: 14,
+    marginBottom: 18,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
   },
   dropdownLabel: {
-    color: "#bbb",
-    fontSize: 14,
-    marginLeft: 8,
-    marginTop: 6,
+    color: "#9ca3af",
+    fontSize: 13,
+    marginBottom: 4,
+    fontWeight: "600",
   },
   dropdown: {
     color: "#fff",
-    width: "100%",
+    fontSize: 16,
+  },
+
+  metricsContainer: {
+    flexDirection: "row",
+    gap: 12,
+    marginBottom: 20,
+  },
+  metricsInput: {
+    flex: 1,
+    backgroundColor: "#151515",
+    color: "#fff",
+    borderRadius: 14,
+    padding: 14,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
+  },
+
+  /* --- RESULT CARD --- */
+  resultBox: {
+    backgroundColor: "#111",
+    padding: 20,
+    borderRadius: 18,
+    marginBottom: 26,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.05)",
+  },
+  resultText: {
+    color: "#4ade80",
+    fontSize: 30,
+    fontWeight: "800",
+    marginBottom: 4,
+  },
+
+  /* --- BUTTONS --- */
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 24,
+  },
+  button: {
+    flex: 1,
+    backgroundColor: "#4ade80",
+    paddingVertical: 14,
+    borderRadius: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+    shadowColor: "#4ade80",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 4,
+  },
+  buttonLabel: {
+    color: "#0f0f0f",
+    fontSize: 16,
+    fontWeight: "700",
+    marginLeft: 6,
+  },
+
+  addButton: {
+    width: 60,
+    backgroundColor: "#262626",
+    paddingVertical: 14,
+    borderRadius: 16,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.07)",
+  },
+
+  /* --- VOLUME SUMMARY CARD --- */
+  summaryCard: {
+    backgroundColor: "#111",
+    padding: 18,
+    borderRadius: 18,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
+  },
+  summaryLabel: {
+    color: "#9ca3af",
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  summaryValue: {
+    color: "#fff",
+    fontSize: 28,
+    fontWeight: "800",
+  },
+
+  /* --- LIST ITEMS --- */
+  listItem: {
+    backgroundColor: "#151515",
+    padding: 16,
+    borderRadius: 16,
+    marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.06)",
+  },
+  listText: {
+    color: "#fff",
+    fontSize: 15,
+    flex: 1,
+    marginRight: 10,
   },
 });
