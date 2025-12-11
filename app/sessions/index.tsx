@@ -5,23 +5,23 @@ import {
   StyleSheet,
   SectionList,
   TouchableOpacity,
-  LayoutAnimation,
-  Platform,
-  UIManager,
 } from "react-native";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
 import { Session } from "@/types/session";
 
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
 export default function SessionsScreen() {
   const db = useSQLiteContext();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+  function toggleSection(title: string) {
+    setOpenSections((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
+  }
 
   function formatDateWithWeekday(dateString: string) {
     const d = new Date(dateString);
@@ -31,7 +31,6 @@ export default function SessionsScreen() {
       month: "2-digit",
       year: "2-digit",
     }).format(d);
-
     return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
@@ -46,16 +45,6 @@ export default function SessionsScreen() {
     loadData();
   }, []);
 
-  // toggle open/close of a section header
-  function toggleSection(title: string) {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setOpenSections((prev) => ({
-      ...prev,
-      [title]: !prev[title],
-    }));
-  }
-
-  // group by date into sections
   const sections = useMemo(() => {
     const grouped: Record<string, Session[]> = {};
 
@@ -75,12 +64,10 @@ export default function SessionsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* CUSTOM TOP BAR */}
       <View style={styles.topBar}>
         <Text style={styles.topBarTitle}>Lagrede Kalkulasjoner</Text>
       </View>
 
-      {/* LIST */}
       <SectionList
         sections={sections}
         keyExtractor={(item) => item.id.toString()}
@@ -107,14 +94,14 @@ export default function SessionsScreen() {
           );
         }}
         renderItem={({ item, section }) => {
-          if (!openSections[section.title]) return null;
+          const isOpen = openSections[section.title];
+          if (!isOpen) return null;
 
           return (
             <TouchableOpacity
               style={styles.card}
               onPress={() => router.push(`/sessions/${item.id}`)}
             >
-    
               <View style={{ marginLeft: 12, flex: 1 }}>
                 <Text style={styles.cardTitle}>
                   {item.navn || "Uten navn"}
@@ -156,14 +143,11 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginLeft: 10,
   },
-
   empty: {
     color: "#666",
     textAlign: "center",
     marginTop: 60,
   },
-
-  /* DATE HEADER */
   headerCard: {
     backgroundColor: "#1f2937",
     paddingVertical: 8,
@@ -180,8 +164,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "600",
   },
-
-  /* ITEM CARD */
   card: {
     flexDirection: "row",
     alignItems: "center",
@@ -189,11 +171,6 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 12,
     marginBottom: 10,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowRadius: 4,
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
   },
   cardTitle: {
     color: "#fff",

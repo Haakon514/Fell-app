@@ -1,5 +1,4 @@
 import { Stack } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
 import { SQLiteProvider } from "expo-sqlite";
 import { AuthProvider } from "@/lib/auth";
@@ -8,7 +7,7 @@ export default function RootLayout() {
   return (
     <AuthProvider>
       <SQLiteProvider
-        databaseName="fell.db"
+        databaseName="fell_v2.db"
         onInit={async (db) => {
           await db.execAsync(`
             CREATE TABLE IF NOT EXISTS users (
@@ -35,6 +34,7 @@ export default function RootLayout() {
               navn TEXT,
               date TEXT,
               user_id INTEGER,
+              total_volume REAL,
               FOREIGN KEY (user_id) REFERENCES users(id)
             );
             PRAGMA journal_mode=WAL;
@@ -56,20 +56,18 @@ export default function RootLayout() {
         }}
         options={{ useNewConnection: false }}
       >
-        <SafeAreaView style={{ flex: 1 }}  edges={["bottom"]} >
-          <StatusBar style="light" />
+        <StatusBar style="light" />
 
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: {
-                backgroundColor: "transparent", // 🔑 let screens paint their own background
-              },
-            }}
-          >
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          </Stack>
-        </SafeAreaView>
+        <Stack
+          screenOptions={{
+            headerShown: false,
+            contentStyle: {
+              backgroundColor: "transparent", // 🔑 let screens paint their own background
+            },
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        </Stack>
       </SQLiteProvider>
     </AuthProvider>
   );

@@ -19,6 +19,35 @@ export function useQueries() {
     );
   }
 
+  async function getSessionsBetweenDates(startDate: string, endDate: string) {
+    return await db.getAllAsync<Session[]>(
+      `SELECT * FROM sessions
+      WHERE date BETWEEN ? AND ?
+      ORDER BY date ASC`,
+      [startDate, endDate]
+    );
+  }
+
+  async function updateSessionTotalVolume(sessionId: number | null) {
+    const row = await db.getFirstAsync(
+      `SELECT SUM(volum) as total
+      FROM treecalculations
+      WHERE session_id = ?`,
+      [sessionId]
+    );
+
+    // row = { total: number | null }
+    const total = row?.total ? Number(row.total) : 0;
+
+    await db.runAsync(
+      `UPDATE sessions
+      SET total_volume = ?
+      WHERE id = ?`,
+      [total, sessionId]
+    );
+
+    return total;
+  }
   async function getTreeCalculations() {
     return await db.getAllAsync("SELECT * FROM treecalculations;");
   }
@@ -27,6 +56,8 @@ export function useQueries() {
     getUsers,
     getSessions,
     getSessionById,
+    getSessionsBetweenDates,
+    updateSessionTotalVolume,
     getTreeCalculations,
   };
 }

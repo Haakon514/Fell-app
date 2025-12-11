@@ -30,7 +30,7 @@ export default function VolumeScreen() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const db = useSQLiteContext();
-  const { getSessionById } = useQueries();
+  const { getSessionById, updateSessionTotalVolume } = useQueries();
   const createSession = useCreateSession();
   const [diameter, setDiameter] = useState("");
   const [length, setLength] = useState("");
@@ -41,15 +41,13 @@ export default function VolumeScreen() {
   const date_today = new Date().toISOString().slice(0, 10);
 
   const SORTIMENT_LIST = [
-    { label: "Sagtømmer Gran (SG)", value: "SG" },
-    { label: "Sagtømmer Furu (SF)", value: "SF" },
-    { label: "Sagtømmer Lauv (SL)", value: "SL" },
-    { label: "Massevirke Gran (MG)", value: "MG" },
-    { label: "Massevirke Furu (MF)", value: "MF" },
-    { label: "Massevirke Lauv (ML)", value: "ML" },
-    { label: "Bio Gran/Furu/Lauv (GFL)", value: "GFL" },
-    { label: "Pallevirke Gran (PG)", value: "PG" },
-    { label: "Pallevirke Furu (PF)", value: "PF" },
+    { label: "Sagtømmer Gran (142)", value: "142" },
+    { label: "Sagtømmer Furu (242)", value: "242" },
+    { label: "Massevirke Gran (102)", value: "102" },
+    { label: "Massevirke Furu (202)", value: "202" },
+    { label: "Bio Gran/Furu/Lauv (932)", value: "932" },
+    { label: "Pallevirke Gran (131)", value: "131" },
+    { label: "Pallevirke Furu (231)", value: "231" },
   ];
 
   /* helper functions bellow */
@@ -75,7 +73,6 @@ export default function VolumeScreen() {
       // (creates a new session every day)
       if (session?.date !== date_today) {
 
-        console.log("Creating new session for new date");
         const createdId = await createSession();
         setSessionId(createdId);
 
@@ -85,7 +82,6 @@ export default function VolumeScreen() {
       }
 
       // if dates match, use existing session
-      console.log("Using existing session from today");
       setSessionId(parseInt(existingSession));
     }
   }
@@ -142,6 +138,8 @@ export default function VolumeScreen() {
         new Date().toISOString().slice(0, 10),
       ]
     );
+
+    updateSessionTotalVolume(sessionId);
 
     setDiameter("");
     setLength("");

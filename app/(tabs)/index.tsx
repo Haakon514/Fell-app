@@ -3,10 +3,10 @@ import { Link, router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ProfileCircle from "../../components/profileCircle";
 import { useAuth } from "@/lib/auth";
-import RecentNumbers from "@/components/recentNumbers";
 import GradientBackground from "@/components/gradientBackround";
-import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
+import RecentNumbersCard from "@/components/recentNumbersCard";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const BLUE_CARD = ["#f8ecdcff", "#e3d8ceff"];
 const PINK_CARD = ["#f8ecdcff", "#e3d0c0ff"];
@@ -16,93 +16,79 @@ export default function HomeScreen() {
   const { user } = useAuth();
 
   return (
-    <View style={styles.container}>
-      <GradientBackground>
-        
-        {/* Profile Top Left
-        <TouchableOpacity
-          style={styles.profileWrapper}
-          onPress={() => router.push("/profile")}
-        >
-          <ProfileCircle
-            name={user ? user.navn : null}
-            leverandørNr={user ? user.leverandør_nummer : null}
-          />
-        </TouchableOpacity> */}
+    <SafeAreaView style={{ flex: 1 }}  edges={["bottom"]} >
+      <View style={styles.container}>
+        <GradientBackground>
+          
+          {/* Profile Top Left
+          <TouchableOpacity
+            style={styles.profileWrapper}
+            onPress={() => router.push("/profile")}
+          >
+            <ProfileCircle
+              name={user ? user.navn : null}
+              leverandørNr={user ? user.leverandør_nummer : null}
+            />
+          </TouchableOpacity> */}
 
-        <ScrollView contentContainerStyle={styles.cardsContainer}>
+          <ScrollView contentContainerStyle={styles.cardsContainer}>
 
-          <View style={styles.clickableCards}>
-            
-            {/* ⭐ BIG CARD — BLUE gradient */}
-            <Link href="/volume" asChild>
-              <TouchableOpacity style={styles.bigCard}>
-                <LinearGradient
-                  colors={BLUE_CARD}
-                  style={[StyleSheet.absoluteFill, { borderRadius: 28 }]}
-                />
-
-                <Text style={styles.bigTitle}>Volum Kalkulator</Text>
-                <Text style={styles.bigDescription}>Regn ut volum på hogst</Text>
-              </TouchableOpacity>
-            </Link>
-
-            {/* ⭐ TWO SMALL CARDS */}
-            <View style={styles.row}>
+            <View style={styles.clickableCards}>
               
-              {/* REGLEMENT — PINK CARD */}
-              <Link href="/reglement" asChild>
-                <TouchableOpacity style={styles.smallCard}>
+              {/* ⭐ BIG CARD — BLUE gradient */}
+              <Link href="/volume" asChild>
+                <TouchableOpacity style={styles.bigCard}>
                   <LinearGradient
-                    colors={PINK_CARD}
-                    style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
+                    colors={BLUE_CARD}
+                    style={[StyleSheet.absoluteFill, { borderRadius: 28 }]}
                   />
 
-                  <MaterialCommunityIcons name="book" size={30} color="#fff" />
-                  <Text style={styles.smallTitle}>Reglement</Text>
+                  <Text style={styles.bigTitle}>Volum Kalkulator</Text>
+                  <Text style={styles.bigDescription}>Regn ut volum på hogst</Text>
                 </TouchableOpacity>
               </Link>
 
-              {/* ØKTER — GREEN CARD */}
-              <Link href="/sessions" asChild>
-                <TouchableOpacity style={styles.smallCard}>
-                  <LinearGradient
-                    colors={GREEN_CARD}
-                    style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
-                  />
+              {/* ⭐ TWO SMALL CARDS */}
+              <View style={styles.row}>
+                
+                {/* REGLEMENT — PINK CARD */}
+                <Link href="/reglement" asChild>
+                  <TouchableOpacity style={styles.smallCard}>
+                    <LinearGradient
+                      colors={PINK_CARD}
+                      style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
+                    />
 
-                  <MaterialCommunityIcons name="calendar-clock" size={30} color="#fff" />
-                  <Text style={styles.smallTitle}>Økter</Text>
-                </TouchableOpacity>
-              </Link>
+                    <MaterialCommunityIcons name="book" size={30} color="#fff" />
+                    <Text style={styles.smallTitle}>Reglement</Text>
+                  </TouchableOpacity>
+                </Link>
 
+                {/* ØKTER — GREEN CARD */}
+                <Link href="/sessions" asChild>
+                  <TouchableOpacity style={styles.smallCard}>
+                    <LinearGradient
+                      colors={GREEN_CARD}
+                      style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
+                    />
+
+                    <MaterialCommunityIcons name="calendar-clock" size={30} color="#fff" />
+                    <Text style={styles.smallTitle}>Økter</Text>
+                  </TouchableOpacity>
+                </Link>
+
+              </View>
             </View>
-          </View>
 
-          {/* ⭐ RECENT CARD */}
-          <Link href="/nylig" asChild>
-            <TouchableOpacity style={styles.recentCard}>
-              {/* Background to blur */}
-              <LinearGradient
-                colors={["#f8f8f9ff", "#e9e6f2ff"]}
-                style={styles.recentCardBackground}
-              />
+            {/* ⭐ RECENT CARD */}
+            <RecentNumbersCard
+              onPress={() => router.push("/nylig")}
+            />
 
-              {/* Blur effect */}
-              <BlurView
-                intensity={30}
-                tint="dark"
-                experimentalBlurMethod="dimezisBlurView" // helps Android
-                style={styles.recentBlur}
-              >
-                <RecentNumbers value={150} label="kubikk" />
-              </BlurView>
-            </TouchableOpacity>
-          </Link>
-
-        </ScrollView>
-      </GradientBackground>
-    </View>
+          </ScrollView>
+        </GradientBackground>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -188,29 +174,4 @@ const styles = StyleSheet.create({
     marginTop: 6,
     opacity: 0.95,
   },
-
-  /* ⭐ RECENT CARD */
-recentCard: {
-  borderRadius: 26,
-  overflow: "hidden",     // MUST for BlurView to reveal the blur correctly
-  top: 110,
-  minHeight: 140,
-  position: "relative",
-
-  backgroundColor: "rgba(255,255,255,0.05)", // subtle translucent base (fix)
-},
-
-recentCardBackground: {
-  ...StyleSheet.absoluteFillObject,
-  opacity: 0.4,                                // important: content to blur!
-},
-
-recentBlur: {
-  ...StyleSheet.absoluteFillObject,
-  justifyContent: "center",
-  alignItems: "center",
-  padding: 20,
-
-  backgroundColor: "transparent",              // REQUIRED
-},
 });
