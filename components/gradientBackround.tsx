@@ -1,27 +1,20 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
-import { LinearGradient } from "expo-linear-gradient";
+import { ImageBackground, StyleSheet } from "react-native";
 
 export default function GradientBackground({ children }) {
   return (
-    <LinearGradient
-      colors={[
-        "#ffffffff",
-        "#ffffffff",
-        "#ffffffff",
-        "#5B78F4"
-      ]}
-      start={{ x: 0.5, y: 1 }}
-      end={{ x: 0.5, y: 0 }}
+    <ImageBackground
+      source={require("@/assets/backgrounds/lumberjack.png")} // <-- add your file here
       style={styles.container}
+      resizeMode="cover"
     >
       {children}
-    </LinearGradient>
+    </ImageBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1
+    flex: 1,
   },
 });
