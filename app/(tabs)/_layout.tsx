@@ -12,6 +12,7 @@ export default function TabLayout() {
         tabBarHideOnKeyboard: true,
 
         tabBarStyle: {
+          outlineColor: "red",
           shadowColor: "#f77a05ff",
           position: "absolute",
           backgroundColor: "#ffffffff",
@@ -43,6 +44,20 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? "person" : "person-outline"}
+              color={color}
+              size={26}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="sessions"
+        options={{
+          title: "Sessions",
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? "time" : "time-outline"}
               color={color}
               size={26}
             />

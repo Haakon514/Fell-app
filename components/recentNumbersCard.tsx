@@ -1,13 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
-import { TouchableOpacity, StyleSheet, Animated, View, Text } from "react-native";
+import {
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+  View,
+  Text,
+} from "react-native";
 import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
 import { useQueries } from "@/lib/useQueries";
 
-type Props = {
-  onPress?: () => void;
-};
-
-export default function RecentNumbersCard({ onPress }: Props) {
+export default function RecentNumbersCard() {
   const { getSessionsBetweenDates } = useQueries();
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -15,16 +18,27 @@ export default function RecentNumbersCard({ onPress }: Props) {
   const [yearTotal, setYearTotal] = useState<number>(0);
 
   function toDayStart(date: Date) {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0)
-      .toISOString();
+    return new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      0,
+      0,
+      0
+    ).toISOString();
   }
 
   function toDayEnd(date: Date) {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59)
-      .toISOString();
+    return new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
+      23,
+      59,
+      59
+    ).toISOString();
   }
 
-  /** 🗓️ Build date strings */
   function getCurrentMonthRange() {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -43,15 +57,16 @@ export default function RecentNumbersCard({ onPress }: Props) {
     };
   }
 
-  /** 📊 Load monthly + yearly totals */
   async function loadStats() {
     const month = getCurrentMonthRange();
     const year = getCurrentYearRange();
 
-    const monthSessions = await getSessionsBetweenDates(month.start, month.end);
+    const monthSessions = await getSessionsBetweenDates(
+      month.start,
+      month.end
+    );
     const yearSessions = await getSessionsBetweenDates(year.start, year.end);
 
-    // Assuming each session has: volume OR total calculated wood
     const monthSum = (monthSessions || []).reduce(
       (sum, s) => sum + Number(s.total_volume || 0),
       0
@@ -65,10 +80,18 @@ export default function RecentNumbersCard({ onPress }: Props) {
     setMonthTotal(monthSum);
     setYearTotal(yearSum);
 
-    // Animate when updated
+    // liten “pop” når tallene oppdateres
     Animated.sequence([
-      Animated.spring(scale, { toValue: 1.12, friction: 5, useNativeDriver: true }),
-      Animated.spring(scale, { toValue: 1, friction: 6, useNativeDriver: true }),
+      Animated.spring(scale, {
+        toValue: 1.06,
+        friction: 6,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scale, {
+        toValue: 1,
+        friction: 7,
+        useNativeDriver: true,
+      }),
     ]).start();
   }
 
@@ -77,34 +100,57 @@ export default function RecentNumbersCard({ onPress }: Props) {
   }, []);
 
   return (
-    <Animated.View style={{ transform: [{ scale }] }}>
+    <Animated.View style={[styles.cardWrapper, { transform: [{ scale }] }]}>
       <TouchableOpacity
-        onPress={onPress}
         activeOpacity={0.9}
-        style={styles.cardWrapper}
+        style={styles.touchArea}
       >
+        {/* Glow bak kortet */}
+        <View style={styles.glow} />
 
-        {/* Blur layer */}
+        {/* Gradient-bakgrunn (som på inspirasjonsbildet) */}
+        <LinearGradient
+          colors={["#fefefeff", "#fadfc3ff", "#fead49ff"]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.gradient}
+        />
+
+        {/* Glass-lag */}
         <BlurView
-          intensity={55}
-          tint="light"
+          intensity={20}
+          tint="dark"
           experimentalBlurMethod="dimezisBlurView"
           style={styles.blur}
         >
-          {/* Monthly */}
-          <Animated.View style={styles.block}>
-            <Text style={styles.label}>Denne måneden</Text>
-            <Text style={styles.value}>{Number(monthTotal || 0).toFixed(2)} m³</Text>
-          </Animated.View>
+          {/* Header / tittel */}
+          <View style={styles.headerRow}>
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>Volum</Text>
+            </View>
+            <Text style={styles.headerSub}>
+              Oversikt for måneden og året
+            </Text>
+          </View>
 
-          {/* Divider */}
-          <View style={styles.divider} />
+          {/* Innhold med to blokker */}
+          <View style={styles.contentRow}>
+            <View style={styles.statBlockPrimary}>
+              <Text style={styles.label}>Denne måneden</Text>
+              <Text style={styles.valuePrimary}>
+                {Number(monthTotal || 0).toFixed(2)} m³
+              </Text>
+            </View>
 
-          {/* Yearly */}
-          <Animated.View style={styles.block}>
-            <Text style={styles.label}>Dette året</Text>
-            <Text style={styles.value}>{Number(yearTotal || 0).toFixed(2)} m³</Text>
-          </Animated.View>
+            <View style={styles.verticalDivider} />
+
+            <View style={styles.statBlockSecondary}>
+              <Text style={styles.label}>Dette året</Text>
+              <Text style={styles.valueSecondary}>
+                {Number(yearTotal || 0).toFixed(2)} m³
+              </Text>
+            </View>
+          </View>
         </BlurView>
       </TouchableOpacity>
     </Animated.View>
@@ -113,54 +159,99 @@ export default function RecentNumbersCard({ onPress }: Props) {
 
 const styles = StyleSheet.create({
   cardWrapper: {
-    borderRadius: 26,
+    width: "100%",
+  },
+  touchArea: {
+    borderRadius: 25,
     overflow: "hidden",
-    minHeight: 160,
+    minHeight: 130,
     position: "relative",
-
-    backgroundColor: "transparent",
-
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 8,
+    justifyContent: "center",
   },
 
-  background: {
+  glow: {
+    position: "absolute",
+    left: -40,
+    right: -40,
+    top: 30,
+    height: 120,
+    borderRadius: 40,
+    backgroundColor: "rgba(109, 75, 255, 0.45)",
+    opacity: 0.2,
+    filter: "blur(28px)" as any, // ignoreres på native
+  },
+
+  gradient: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 1,
   },
 
   blur: {
     ...StyleSheet.absoluteFillObject,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    borderRadius: 28,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.22)",
     justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 24,
   },
-  block: {
+
+  headerRow: {
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  badge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  badgeText: {
+    color: "#FFFFFF",
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  headerSub: {
+    color: "rgba(255,255,255,0.78)",
+    fontSize: 12,
+  },
+
+  contentRow: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    justifyContent: "space-between",
+  },
+
+  statBlockPrimary: {
+    flex: 1.2,
+  },
+  statBlockSecondary: {
+    flex: 1,
+    alignItems: "flex-end",
   },
 
   label: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: "600",
-    color: "#4a4a4a",
-    opacity: 0.7,
+    color: "rgba(255,255,255,0.78)",
+    marginBottom: 4,
   },
 
-  value: {
-    fontSize: 30,
+  valuePrimary: {
+    fontSize: 19,
     fontWeight: "800",
-    color: "#2b2b2b",
-    marginTop: 2,
+    color: "#FFFFFF",
+  },
+  valueSecondary: {
+    fontSize: 19,
+    fontWeight: "700",
+    color: "rgba(255,255,255,0.9)",
   },
 
-  divider: {
-    width: "60%",
-    height: 1,
-    backgroundColor: "rgba(0,0,0,0.1)",
-    marginVertical: 10,
+  verticalDivider: {
+    width: 1,
+    marginHorizontal: 16,
+    backgroundColor: "rgba(255,255,255,0.18)",
   },
 });

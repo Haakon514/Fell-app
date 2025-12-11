@@ -32,21 +32,9 @@ export default function HomeScreen() {
           </TouchableOpacity> */}
 
           <ScrollView contentContainerStyle={styles.cardsContainer}>
-
             <View style={styles.clickableCards}>
-              
-              {/* ⭐ BIG CARD — BLUE gradient */}
-              <Link href="/volume" asChild>
-                <TouchableOpacity style={styles.bigCard}>
-                  <LinearGradient
-                    colors={BLUE_CARD}
-                    style={[StyleSheet.absoluteFill, { borderRadius: 28 }]}
-                  />
-
-                  <Text style={styles.bigTitle}>Volum Kalkulator</Text>
-                  <Text style={styles.bigDescription}>Regn ut volum på hogst</Text>
-                </TouchableOpacity>
-              </Link>
+              {/* ⭐ RECENT CARD */}
+              <RecentNumbersCard />
 
               {/* ⭐ TWO SMALL CARDS */}
               <View style={styles.row}>
@@ -65,26 +53,20 @@ export default function HomeScreen() {
                 </Link>
 
                 {/* ØKTER — GREEN CARD */}
-                <Link href="/sessions" asChild>
+                <Link href="/volume" asChild>
                   <TouchableOpacity style={styles.smallCard}>
                     <LinearGradient
                       colors={GREEN_CARD}
                       style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
                     />
 
-                    <MaterialCommunityIcons name="calendar-clock" size={30} color="#fff" />
-                    <Text style={styles.smallTitle}>Økter</Text>
+                    <MaterialCommunityIcons name="calculator" size={30} color="#fff" />
+                    <Text style={styles.smallTitle}>Volum Kalkulator</Text>
                   </TouchableOpacity>
                 </Link>
 
               </View>
             </View>
-
-            {/* ⭐ RECENT CARD */}
-            <RecentNumbersCard
-              onPress={() => router.push("/nylig")}
-            />
-
           </ScrollView>
         </GradientBackground>
       </View>
@@ -115,11 +97,11 @@ const styles = StyleSheet.create({
 
   row: {
     flexDirection: "row",
-    gap: 16,
+    gap: 10,
   },
 
   clickableCards: {
-    gap: 22,
+    gap: 15,
     bottom: 100,
   },
 
@@ -130,12 +112,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     alignItems: "center",
     justifyContent: "center",
-
-    shadowColor: "#000",
-    shadowOpacity: 0.22,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 7,
+    top: 50,
   },
 
   bigTitle: {
@@ -155,16 +132,10 @@ const styles = StyleSheet.create({
   /* ⭐ SMALL CARDS */
   smallCard: {
     flex: 1,
-    borderRadius: 24,
-    paddingVertical: 22,
+    borderRadius: 25,
+    paddingVertical: 15,
     alignItems: "center",
     justifyContent: "center",
-
-    shadowColor: "#000",
-    shadowOpacity: 0.18,
-    shadowRadius: 12,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 6,
   },
 
   smallTitle: {
