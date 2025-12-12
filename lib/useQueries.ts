@@ -33,6 +33,8 @@ export function useQueries() {
   }
 
   async function updateSessionTotalVolume(sessionId: number | null) {
+    if(!sessionId) return;
+
     const row = await db.getFirstAsync(
       `SELECT SUM(volum) as total
       FROM treecalculations

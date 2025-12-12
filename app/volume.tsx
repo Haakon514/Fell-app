@@ -19,10 +19,10 @@ import { useQueries } from "@/lib/useQueries";
 import { Session } from "@/types/session";
 
 type Calc = {
+  id: number;
   diameter: string;
   length: string;
   sortimentCode: string;
-  result: string;
   volume: number;
 };
 
@@ -33,7 +33,7 @@ export default function VolumeScreen() {
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const db = useSQLiteContext();
-  const { getSessionById, updateSessionTotalVolume } = useQueries();
+  const { getSessionById, updateSessionTotalVolume, deleteTreeCalculation } = useQueries();
   const createSession = useCreateSession();
   const [diameter, setDiameter] = useState("");
   const [length, setLength] = useState("");
@@ -58,7 +58,6 @@ export default function VolumeScreen() {
   async function createOrGetSession() {
     // try to get an existing session from SecureStore
     const existingSession = await SecureStore.getItemAsync("sessionId");
-    console.log("Existing session from SecureStore:", existingSession);
 
     // if no existing session found, create new session
     if (!existingSession) {
@@ -76,7 +75,7 @@ export default function VolumeScreen() {
 
       // (creates a new session every day)
       if (session?.date !== date_today) {
-
+        
         const createdId = await createSession();
         setSessionId(createdId);
 
@@ -95,11 +94,14 @@ export default function VolumeScreen() {
     setShowModalToDeleteIndex(true);
   }
 
-  // handle delete
-
-  function handleDelete() {
+  // handle delete 1 item
+  const handleDelete = async () => {
     if (selectedIndex !== null) {
       const item = calculationsList[selectedIndex];
+
+      await deleteTreeCalculation(item.id);
+
+      await updateSessionTotalVolume(sessionId);
 
       setCurrentSession((prev) => ({
         ...prev!,
@@ -111,11 +113,20 @@ export default function VolumeScreen() {
     setShowModalToDeleteIndex(false);
   }
 
-  function handleDeleteHoleList() {
+  //handle deleting hole list
+  const handleDeleteHoleList = async() => {
+    if(calculationsList.length === 0) return;
+
     const totalRemoved = calculationsList.reduce(
       (sum, item) => sum + item.volume,
       0
     );
+
+    for(const item of calculationsList){
+      await deleteTreeCalculation(item.id);
+    }
+
+    await updateSessionTotalVolume(sessionId);
 
     setCurrentSession((prev) => ({
       ...prev!,
@@ -127,7 +138,6 @@ export default function VolumeScreen() {
   }
 
   // handle calculation
-
   const calculate = () => {
     const d = parseFloat(diameter);
     const l = parseFloat(length);
@@ -146,16 +156,8 @@ export default function VolumeScreen() {
   const handleAddToList = async () => {
     if (!result) return;
 
-    const entry = { diameter, length, sortimentCode, result, volume };
-    setCalculationsList((prev) => [...prev, entry]);
-
-    setCurrentSession((prev) => ({
-      ...prev!,
-      total_volume: (prev?.total_volume || 0) + volume!,
-    }));
-
-    // 3. SAVE TO DATABASE
-    db.runAsync(
+    // first save to database
+    const insertResult = await db.runAsync(
       `INSERT INTO treecalculations (session_id, sortiment_kode, diameter, lengde, volum, timestamp)
       VALUES (?, ?, ?, ?, ?, ?)`,
       [
@@ -168,8 +170,21 @@ export default function VolumeScreen() {
       ]
     );
 
-    updateSessionTotalVolume(sessionId);
+    const id = insertResult.lastInsertRowId;
 
+    // update sessions total volume
+    await updateSessionTotalVolume(sessionId);
+
+    const entry = { id, diameter, length, sortimentCode, volume };
+    setCalculationsList((prev) => [...prev, entry]);
+
+    // update total volume reactivly
+    setCurrentSession((prev) => ({
+      ...prev!,
+      total_volume: (prev?.total_volume || 0) + volume!,
+    }));
+
+    // clear inputs
     setDiameter("");
     setLength("");
   };
@@ -269,7 +284,7 @@ export default function VolumeScreen() {
         renderItem={({ item, index }) => (
           <View style={styles.listItem}>
             <Text style={styles.listText}>
-              D{item.diameter}cm * L{item.length}m = {item.result} (SK: {item.sortimentCode})
+              D{item.diameter}cm * L{item.length}m = {item.result} (SK: {item.sortimentCode} ID: {item.id})
             </Text>
 
             <TouchableOpacity onPress={() => confirmDeleteIndex(index)}>
