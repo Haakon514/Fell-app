@@ -32,27 +32,15 @@ export function useQueries() {
     return await db.getAllAsync("SELECT * FROM treecalculations;");
   }
 
-  async function updateSessionTotalVolume(sessionId: number | null) {
-    if(!sessionId) return;
-
-    const row = await db.getFirstAsync(
-      `SELECT SUM(volum) as total
-      FROM treecalculations
-      WHERE session_id = ?`,
-      [sessionId]
-    );
-
-    // row = { total: number | null }
-    const total = row?.total ? Number(row.total) : 0;
+  async function setSessionTotalVolume(sessionId: number | null, new_total_volume: number | null) {
+    if(!sessionId || !new_total_volume) return;
 
     await db.runAsync(
       `UPDATE sessions
       SET total_volume = ?
       WHERE id = ?`,
-      [total, sessionId]
+      [new_total_volume, sessionId]
     );
-
-    return total;
   }
 
   async function deleteTreeCalculation(id: number){
@@ -66,7 +54,7 @@ export function useQueries() {
     getSessions,
     getSessionById,
     getSessionsBetweenDates,
-    updateSessionTotalVolume,
+    setSessionTotalVolume,
     getTreeCalculations,
     deleteTreeCalculation,
   };

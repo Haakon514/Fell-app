@@ -24,6 +24,7 @@ type Calc = {
   length: string;
   sortimentCode: string;
   volume: number;
+  result: string;
 };
 
 export default function VolumeScreen() {
@@ -32,8 +33,9 @@ export default function VolumeScreen() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [currentSession, setCurrentSession] = useState<Session | null>(null);
+  const [totalVolume, setTotalVolume] = useState<number | null>(null);
   const db = useSQLiteContext();
-  const { getSessionById, updateSessionTotalVolume, deleteTreeCalculation } = useQueries();
+  const { getSessionById, setSessionTotalVolume, deleteTreeCalculation } = useQueries();
   const createSession = useCreateSession();
   const [diameter, setDiameter] = useState("");
   const [length, setLength] = useState("");
@@ -72,6 +74,7 @@ export default function VolumeScreen() {
       // get the existing session from DB to check date
       const session = await getSessionById(parseInt(existingSession));
       setCurrentSession(session);
+      setTotalVolume(session?.total_volume || null);
 
       // (creates a new session every day)
       if (session?.date !== date_today) {
@@ -98,14 +101,16 @@ export default function VolumeScreen() {
   const handleDelete = async () => {
     if (selectedIndex !== null) {
       const item = calculationsList[selectedIndex];
+      const new_total_volume = (totalVolume ?? 0) - item.volume;
+      setTotalVolume(new_total_volume);
 
       await deleteTreeCalculation(item.id);
 
-      await updateSessionTotalVolume(sessionId);
+      await setSessionTotalVolume(sessionId, new_total_volume);
 
       setCurrentSession((prev) => ({
         ...prev!,
-        total_volume: (prev?.total_volume || 0) - item.volume,
+        total_volume: new_total_volume || 0,
       }));
 
       setCalculationsList((list) => list.filter((_, i) => i !== selectedIndex));
@@ -126,13 +131,14 @@ export default function VolumeScreen() {
       await deleteTreeCalculation(item.id);
     }
 
-    await updateSessionTotalVolume(sessionId);
+    await setSessionTotalVolume(sessionId, (totalVolume ?? 0) - totalRemoved);
 
     setCurrentSession((prev) => ({
       ...prev!,
-      total_volume: (prev?.total_volume || 0) - totalRemoved,
+      total_volume: (totalVolume ?? 0) - totalRemoved,
     }));
 
+    setTotalVolume((totalVolume ?? 0) - totalRemoved)
     setCalculationsList([]);
     setShowModalToDeleteList(false);
   }
@@ -154,7 +160,7 @@ export default function VolumeScreen() {
   };
 
   const handleAddToList = async () => {
-    if (!result) return;
+    if (!result || !volume) return;
 
     // first save to database
     const insertResult = await db.runAsync(
@@ -171,17 +177,19 @@ export default function VolumeScreen() {
     );
 
     const id = insertResult.lastInsertRowId;
+    const new_total_volume = (totalVolume ?? 0) + volume;
+    setTotalVolume(new_total_volume);
 
     // update sessions total volume
-    await updateSessionTotalVolume(sessionId);
+    await setSessionTotalVolume(sessionId, new_total_volume);
 
-    const entry = { id, diameter, length, sortimentCode, volume };
+    const entry = { id, diameter, length, sortimentCode, volume, result };
     setCalculationsList((prev) => [...prev, entry]);
 
     // update total volume reactivly
     setCurrentSession((prev) => ({
       ...prev!,
-      total_volume: (prev?.total_volume || 0) + volume!,
+      total_volume: new_total_volume || 0,
     }));
 
     // clear inputs
@@ -237,7 +245,17 @@ export default function VolumeScreen() {
           placeholder="Diameter (cm)"
           placeholderTextColor="#bbb"
           value={diameter}
-          onChangeText={setDiameter}
+          onChangeText={(text) => {
+            if (text === "") {
+              setDiameter("");
+              return;
+            }
+
+            const num = Number(text);
+            if (isNaN(num) || num < 0) return;
+
+            setDiameter(text);
+          }}
           keyboardType="numeric"
         />
 
@@ -246,7 +264,17 @@ export default function VolumeScreen() {
           placeholder="Lengde (m)"
           placeholderTextColor="#bbb"
           value={length}
-          onChangeText={setLength}
+          onChangeText={(text) => {
+            if (text === "") {
+              setLength("");
+              return;
+            }
+
+            const num = Number(text);
+            if (isNaN(num) || num < 0) return;
+
+            setLength(text);
+          }}
           keyboardType="numeric"
         />
       </View>
@@ -274,7 +302,7 @@ export default function VolumeScreen() {
           Totalt volum for {date_today}
         </Text>
         <Text style={styles.summaryValue}>
-          {currentSession?.total_volume.toFixed(2)} m³
+          {totalVolume?.toFixed(2)} m³
         </Text>
       </View>
 
@@ -284,7 +312,7 @@ export default function VolumeScreen() {
         renderItem={({ item, index }) => (
           <View style={styles.listItem}>
             <Text style={styles.listText}>
-              D{item.diameter}cm * L{item.length}m = {item.result} (SK: {item.sortimentCode} ID: {item.id})
+              D{item.diameter}cm * L{item.length}m = {item.result} (SK: {item.sortimentCode})
             </Text>
 
             <TouchableOpacity onPress={() => confirmDeleteIndex(index)}>
