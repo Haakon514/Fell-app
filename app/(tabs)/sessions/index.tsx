@@ -104,7 +104,7 @@ export default function SessionsScreen() {
             >
               <View style={{ marginLeft: 12, flex: 1 }}>
                 <Text style={styles.cardTitle}>
-                  {item.navn || "Uten navn"}
+                  {item.navn || `Hogst ${formatDateWithWeekday(item.date)} Med Totalt Volum: ${item.total_volume.toFixed(2)} m³`}
                 </Text>
                 <Text style={styles.cardSubtitle}>
                   Bruker: {item.user_id || "Anonym"}

@@ -62,7 +62,13 @@ export default function Reglement() {
             <Text style={styles.lengthPercent}>30%</Text>
           </View>
           <View style={[styles.lengthBox, { backgroundColor: "#51cf66" }]}>
+            <Text style={styles.lengthPercent}></Text>
+          </View>
+          <View style={[styles.lengthBox, { backgroundColor: "#51cf66" }]}>
             <Text style={styles.lengthPercent}>60%</Text>
+          </View>
+          <View style={[styles.lengthBox, { backgroundColor: "#51cf66" }]}>
+            <Text style={styles.lengthPercent}></Text>
           </View>
         </View>
 
@@ -171,13 +177,11 @@ const styles = StyleSheet.create({
   },
   lengthRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
   },
   lengthBox: {
     flex: 1,
-    margin: 4,
+    marginTop: 4,
     paddingVertical: 14,
-    borderRadius: 6,
     justifyContent: "center",
     alignItems: "center",
   },

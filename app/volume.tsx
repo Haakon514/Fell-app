@@ -272,7 +272,7 @@ export default function VolumeScreen() {
         {/* ADD */}
         <TouchableOpacity style={styles.button} onPress={handleAddToList}>
           <MaterialCommunityIcons name="plus" size={30} color="#fff" />
-          <Text style={styles.buttonLabel}>Legg til kalkulasjon</Text>
+          <Text style={styles.buttonLabel}>Lagre kalkulasjon</Text>
         </TouchableOpacity>
 
         {/* "MENU" BUTTON (clear list) */}
