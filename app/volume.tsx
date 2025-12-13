@@ -32,7 +32,6 @@ export default function VolumeScreen() {
   const [showModalToDeleteList, setShowModalToDeleteList] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [sessionId, setSessionId] = useState<number | null>(null);
-  const [currentSession, setCurrentSession] = useState<Session | null>(null);
   const [totalVolume, setTotalVolume] = useState<number | null>(null);
   const db = useSQLiteContext();
   const { getSessionById, setSessionTotalVolume, deleteTreeCalculation } = useQueries();
@@ -73,7 +72,6 @@ export default function VolumeScreen() {
     } else {
       // get the existing session from DB to check date
       const session = await getSessionById(parseInt(existingSession));
-      setCurrentSession(session);
       setTotalVolume(session?.total_volume || null);
 
       // (creates a new session every day)
@@ -81,6 +79,7 @@ export default function VolumeScreen() {
         
         const createdId = await createSession();
         setSessionId(createdId);
+        setTotalVolume(0);
 
         await SecureStore.setItemAsync("sessionId", createdId.toString());
 
@@ -108,11 +107,6 @@ export default function VolumeScreen() {
 
       await setSessionTotalVolume(sessionId, new_total_volume);
 
-      setCurrentSession((prev) => ({
-        ...prev!,
-        total_volume: new_total_volume || 0,
-      }));
-
       setCalculationsList((list) => list.filter((_, i) => i !== selectedIndex));
     }
     setShowModalToDeleteIndex(false);
@@ -132,11 +126,6 @@ export default function VolumeScreen() {
     }
 
     await setSessionTotalVolume(sessionId, (totalVolume ?? 0) - totalRemoved);
-
-    setCurrentSession((prev) => ({
-      ...prev!,
-      total_volume: (totalVolume ?? 0) - totalRemoved,
-    }));
 
     setTotalVolume((totalVolume ?? 0) - totalRemoved)
     setCalculationsList([]);
@@ -162,7 +151,7 @@ export default function VolumeScreen() {
   const handleAddToList = async () => {
     if (!result || !volume) return;
 
-    // first save to database
+    // save to database
     const insertResult = await db.runAsync(
       `INSERT INTO treecalculations (session_id, sortiment_kode, diameter, lengde, volum, timestamp)
       VALUES (?, ?, ?, ?, ?, ?)`,
@@ -186,12 +175,6 @@ export default function VolumeScreen() {
     const entry = { id, diameter, length, sortimentCode, volume, result };
     setCalculationsList((prev) => [...prev, entry]);
 
-    // update total volume reactivly
-    setCurrentSession((prev) => ({
-      ...prev!,
-      total_volume: new_total_volume || 0,
-    }));
-
     // clear inputs
     setDiameter("");
     setLength("");
@@ -199,6 +182,7 @@ export default function VolumeScreen() {
 
   /* end of helper functions */
 
+  // useeffect for new calulations, change in sortiment code and session logic.
   useEffect(() => {
     calculate();
   }, [diameter, length]);
@@ -302,7 +286,7 @@ export default function VolumeScreen() {
           Totalt volum for {date_today}
         </Text>
         <Text style={styles.summaryValue}>
-          {totalVolume?.toFixed(2)} m³
+          {totalVolume?.toFixed(2) || 0} m³
         </Text>
       </View>
 
