@@ -105,12 +105,10 @@ export default function RecentNumbersCard() {
         activeOpacity={0.9}
         style={styles.touchArea}
       >
-        {/* Glow bak kortet */}
-        <View style={styles.glow} />
 
         {/* Gradient-bakgrunn (som på inspirasjonsbildet) */}
         <LinearGradient
-          colors={["#fefefeff", "#fadfc3ff", "#fead49ff"]}
+          colors={["#6b6363ff", "#5e4f40ff", "#231c13ff"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.gradient}
@@ -120,7 +118,6 @@ export default function RecentNumbersCard() {
         <BlurView
           intensity={20}
           tint="dark"
-          experimentalBlurMethod="dimezisBlurView"
           style={styles.blur}
         >
           {/* Header / tittel */}
@@ -167,18 +164,6 @@ const styles = StyleSheet.create({
     minHeight: 130,
     position: "relative",
     justifyContent: "center",
-  },
-
-  glow: {
-    position: "absolute",
-    left: -40,
-    right: -40,
-    top: 30,
-    height: 120,
-    borderRadius: 40,
-    backgroundColor: "rgba(109, 75, 255, 0.45)",
-    opacity: 0.2,
-    filter: "blur(28px)" as any, // ignoreres på native
   },
 
   gradient: {

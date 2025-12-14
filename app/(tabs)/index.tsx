@@ -3,72 +3,67 @@ import { Link, router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ProfileCircle from "../../components/profileCircle";
 import { useAuth } from "@/lib/auth";
-import GradientBackground from "@/components/gradientBackround";
 import { LinearGradient } from "expo-linear-gradient";
 import RecentNumbersCard from "@/components/recentNumbersCard";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const BLUE_CARD = ["#f8ecdcff", "#e3d8ceff"];
-const PINK_CARD = ["#f8ecdcff", "#e3d0c0ff"];
-const GREEN_CARD = ["#f8ecdcff", "#d4bfacff"];
+const GRADIENT_CARD = ["#656159ff", "#302316ff"];
 
 export default function HomeScreen() {
   const { user } = useAuth();
 
   return (
-    <SafeAreaView style={{ flex: 1 }}  edges={["bottom"]} >
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#0f0f0f" }} edges={["bottom"]} >
       <View style={styles.container}>
-        <GradientBackground>
           
-          {/* Profile Top Left
-          <TouchableOpacity
-            style={styles.profileWrapper}
-            onPress={() => router.push("/profile")}
-          >
-            <ProfileCircle
-              name={user ? user.navn : null}
-              leverandørNr={user ? user.leverandør_nummer : null}
-            />
-          </TouchableOpacity> */}
+        {/* Profile Top Left
+        <TouchableOpacity
+          style={styles.profileWrapper}
+          onPress={() => router.push("/profile")}
+        >
+          <ProfileCircle
+            name={user ? user.navn : null}
+            leverandørNr={user ? user.leverandør_nummer : null}
+          />
+        </TouchableOpacity> */}
 
-          <ScrollView contentContainerStyle={styles.cardsContainer}>
-            <View style={styles.clickableCards}>
-              {/* ⭐ RECENT CARD */}
-              <RecentNumbersCard />
+        <ScrollView contentContainerStyle={styles.cardsContainer}>
+          <View style={styles.clickableCards}>
+            {/* ⭐ RECENT CARD */}
+            <RecentNumbersCard />
 
-              {/* ⭐ TWO SMALL CARDS */}
-              <View style={styles.row}>
-                
-                {/* REGLEMENT — PINK CARD */}
-                <Link href="/reglement" asChild>
-                  <TouchableOpacity style={styles.smallCard}>
-                    <LinearGradient
-                      colors={PINK_CARD}
-                      style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
-                    />
+            {/* ⭐ TWO SMALL CARDS */}
+            <View style={styles.row}>
+              
+              {/* REGLEMENT — PINK CARD */}
+              <Link href="/reglement" asChild>
+                <TouchableOpacity style={styles.smallCard}>
+                  <LinearGradient
+                    colors={GRADIENT_CARD}
+                    style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
+                  />
 
-                    <MaterialCommunityIcons name="book" size={30} color="#fff" />
-                    <Text style={styles.smallTitle}>Reglement</Text>
-                  </TouchableOpacity>
-                </Link>
+                  <MaterialCommunityIcons name="book" size={30} color="#fff" />
+                  <Text style={styles.smallTitle}>Reglement</Text>
+                </TouchableOpacity>
+              </Link>
 
-                {/* ØKTER — GREEN CARD */}
-                <Link href="/volume" asChild>
-                  <TouchableOpacity style={styles.smallCard}>
-                    <LinearGradient
-                      colors={GREEN_CARD}
-                      style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
-                    />
+              {/* ØKTER — GREEN CARD */}
+              <Link href="/volume" asChild>
+                <TouchableOpacity style={styles.smallCard}>
+                  <LinearGradient
+                    colors={GRADIENT_CARD}
+                    style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
+                  />
 
-                    <MaterialCommunityIcons name="calculator" size={30} color="#fff" />
-                    <Text style={styles.smallTitle}>Volum Kalkulator</Text>
-                  </TouchableOpacity>
-                </Link>
+                  <MaterialCommunityIcons name="calculator" size={30} color="#fff" />
+                  <Text style={styles.smallTitle}>Volum Kalkulator</Text>
+                </TouchableOpacity>
+              </Link>
 
-              </View>
             </View>
-          </ScrollView>
-        </GradientBackground>
+          </View>
+        </ScrollView>
       </View>
     </SafeAreaView>
   );
@@ -78,6 +73,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor:"#0f0f0f",
   },
 
   profileWrapper: {
@@ -132,8 +128,10 @@ const styles = StyleSheet.create({
   /* ⭐ SMALL CARDS */
   smallCard: {
     flex: 1,
-    borderRadius: 25,
     paddingVertical: 15,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.22)",
     alignItems: "center",
     justifyContent: "center",
   },

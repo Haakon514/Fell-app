@@ -12,9 +12,8 @@ export default function TabLayout() {
         tabBarHideOnKeyboard: true,
 
         tabBarStyle: {
-          shadowColor: "#f77a05ff",
           position: "absolute",
-          backgroundColor: "#ffffffff",
+          backgroundColor: "#0f0f0f",
           height: 60,
           paddingBottom: 10,
           paddingTop: 10,
