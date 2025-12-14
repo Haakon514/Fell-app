@@ -16,15 +16,15 @@ import { useAuth } from "@/lib/auth";
 
 export default function LoginScreen() {
   const db = useSQLiteContext();
-  const [email, setEmail] = useState("");
+  const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useAuth();
 
   const submitLogin = async () => {
     try {
       const user: User | null | undefined = await db.getFirstAsync<User>(
-        `SELECT * FROM users WHERE email = ?`,
-        [email]
+        `SELECT * FROM users WHERE bruker_navn = ?`,
+        [userName]
       );
 
       if (!user) {
@@ -45,7 +45,7 @@ export default function LoginScreen() {
       Alert.alert("Logget inn!", `Velkommen tilbake ${user.navn}`);
 
       // reset form
-      setEmail("");
+      setUserName("");
       setPassword("");
 
       // go home:
@@ -63,12 +63,11 @@ export default function LoginScreen() {
       {/* EMAIL */}
       <TextInput
         style={styles.input}
-        placeholder="E-post"
+        placeholder="Brukernavn"
         placeholderTextColor="#777"
         autoCapitalize="none"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
+        value={userName}
+        onChangeText={setUserName}
       />
 
       {/* PASSWORD */}
@@ -124,7 +123,7 @@ const styles = StyleSheet.create({
   },
   button: {
     flexDirection: "row",
-    backgroundColor: "#2e7d32",
+    backgroundColor: "#4b54c8ff",
     padding: 16,
     borderRadius: 12,
     alignItems: "center",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -13,7 +13,6 @@ import { TreeCalculation } from "@/types/treeCalculation";
 
 type Props = {
   sessionId: number;
-  userId?: number | null;
 };
 
 export default function SessionCalculations({ sessionId }: Props) {
@@ -21,7 +20,7 @@ export default function SessionCalculations({ sessionId }: Props) {
 
   const [loading, setLoading] = useState(true);
   const [calculations, setCalculations] = useState<TreeCalculation[]>([]);
-  const [totalVolume, setTotalVolume] = useState(0);
+  const [selectedSortiment, setSelectedSortiment] = useState<string | null>(null); // ⭐ ADDED
 
   // 👉 Load data
   async function loadData() {
@@ -31,7 +30,6 @@ export default function SessionCalculations({ sessionId }: Props) {
         [sessionId]
       );
       setCalculations(rows);
-      console.log("Loaded calculations:", rows);
     } catch (err) {
       console.error("Failed to get calculations:", err);
     } finally {
@@ -43,11 +41,27 @@ export default function SessionCalculations({ sessionId }: Props) {
     loadData();
   }, [sessionId]);
 
-  // set total volume whenever calculations change
-  useEffect(() => {
-    const total = calculations.reduce((sum, c) => sum + (Number(c.volum) || 0), 0);
-    setTotalVolume(total);
+  // ⭐ Filtered data
+  const filteredCalculations = useMemo(() => {
+    if (!selectedSortiment) return calculations;
+    return calculations.filter(
+      (c) => c.sortiment_kode === selectedSortiment
+    );
+  }, [selectedSortiment, calculations]);
+
+  // ⭐ Extract list of unique sortiment codes
+  const sortimentCodes = useMemo(() => {
+    const setCodes = new Set(calculations.map((c) => c.sortiment_kode));
+    return Array.from(setCodes);
   }, [calculations]);
+
+  // ⭐ Recalculate total based on filtered list
+  const totalVolume = useMemo(() => {
+    return filteredCalculations.reduce(
+      (sum, c) => sum + (Number(c.volum) || 0),
+      0
+    );
+  }, [filteredCalculations]);
 
   if (loading) {
     return (
@@ -59,68 +73,118 @@ export default function SessionCalculations({ sessionId }: Props) {
 
   return (
     <View style={styles.container}>
-    
-    <Text style={styles.title}>Kalkulasjoner ({calculations.length}) Total {totalVolume.toFixed(2)} m³</Text>
+      <Text style={styles.title}>
+        Kalkulasjoner ({filteredCalculations.length}) — Totalt{" "}
+        {totalVolume.toFixed(2)} m³
+      </Text>
 
-    <FlatList
-      style={{ flex: 1 }}              // 👈 ADD THIS
-      data={calculations}
-      keyExtractor={(item) => item.id.toString()}
-      ListEmptyComponent={
-        <Text style={styles.empty}>Ingen kalkulasjoner i denne sesjonen</Text>
-      }
-      renderItem={({ item }) => {
-        const volume = Number(item.volum ?? item.volum ?? 0);
+      <Text style={{ fontSize: 15, color: '#838383ff', paddingVertical: 10 }}>
+        Sorter basert på sortiment (SK)
+      </Text>
 
-        return (
-          <View style={styles.row}>
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <MaterialCommunityIcons
-                name="pine-tree"
-                size={22}
-                color="#6fbf73"
-              />
+      {/* ⭐ FILTER BAR */}
+      <View style={styles.filterBar}>
+        <TouchableOpacity
+          onPress={() => setSelectedSortiment(null)}
+          style={[
+            styles.filterButton,
+            selectedSortiment === null && styles.filterSelected,
+          ]}
+        >
+          <Text style={styles.filterText}>Alle</Text>
+        </TouchableOpacity>
 
-              <View style={{ marginLeft: 12 }}>
-                <Text style={styles.rowText}>
-                  Ø {item.diameter}cm × {item.lengde}m
-                </Text>
-                <Text style={styles.small}>
-                  SK {item.sortiment_kode} — {item.timestamp}
-                </Text>
+        {sortimentCodes.map((code) => (
+          <TouchableOpacity
+            key={code}
+            onPress={() => setSelectedSortiment(code)}
+            style={[
+              styles.filterButton,
+              selectedSortiment === code && styles.filterSelected,
+            ]}
+          >
+            <Text style={styles.filterText}>SK {code}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* LIST */}
+      <FlatList
+        style={{ flex: 1 }}
+        data={filteredCalculations}
+        keyExtractor={(item) => item.id.toString()}
+        ListEmptyComponent={
+          <Text style={styles.empty}>Ingen kalkulasjoner</Text>
+        }
+        renderItem={({ item }) => {
+          const volume = Number(item.volum ?? 0);
+
+          return (
+            <View style={styles.row}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <MaterialCommunityIcons
+                  name="calculator"
+                  size={18}
+                  color="#ffffffff"
+                />
+                <View style={{ marginLeft: 10 }}>
+                  <Text style={styles.rowText}>
+                    Ø {item.diameter}cm × {item.lengde}m
+                  </Text>
+                  <Text style={styles.small}>
+                    SK {item.sortiment_kode} — {item.timestamp}
+                  </Text>
+                </View>
               </View>
 
-              </View>
-                <Text style={styles.volume}>
-                  {volume.toFixed(2)} m³
-                </Text>
-              </View>
-        );
+              <Text style={styles.volume}>{volume.toFixed(2)} m³</Text>
+            </View>
+          );
         }}
-        />
-
-        </View>
-    );
+      />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    marginTop: 4,
-    marginBottom: 40,
+    marginTop: 10,
+    marginBottom: 20,
   },
 
   title: {
     fontSize: 17,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 12,
+    marginBottom: 5,
+  },
+
+  // ⭐ FILTER BAR
+  filterBar: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 15,
+  },
+  filterButton: {
+    backgroundColor: "#3d3d3dff",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+  },
+  filterSelected: {
+    backgroundColor: "#5f6ddaff",
+  },
+  filterText: {
+    color: "#fff",
+    fontWeight: "600",
   },
 
   row: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#333",
+    backgroundColor: "#242424ff",
     padding: 12,
     borderRadius: 10,
     marginBottom: 8,
@@ -129,18 +193,18 @@ const styles = StyleSheet.create({
 
   rowText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "500",
   },
 
   small: {
     color: "#aaa",
-    fontSize: 12,
+    fontSize: 15,
   },
 
   volume: {
-    color: "#6fbf73",
-    fontSize: 18,
+    color: "#6e7ffeff",
+    fontSize: 22,
     fontWeight: "bold",
   },
 
@@ -148,27 +212,6 @@ const styles = StyleSheet.create({
     color: "#aaa",
     textAlign: "center",
     marginTop: 40,
-  },
-
-  totalBox: {
-    marginTop: 20,
-    backgroundColor: "#2e7d32",
-    padding: 18,
-    borderRadius: 12,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-
-  totalLabel: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-
-  totalValue: {
-    color: "#fff",
-    fontSize: 22,
-    fontWeight: "bold",
   },
 
   loading: {

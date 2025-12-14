@@ -108,7 +108,7 @@ export default function RecentNumbersCard() {
 
         {/* Gradient-bakgrunn (som på inspirasjonsbildet) */}
         <LinearGradient
-          colors={["#6b6363ff", "#5e4f40ff", "#231c13ff"]}
+          colors={["#5c5d60ff", "#2c2d31ff", "#1b1b1fff"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.gradient}
