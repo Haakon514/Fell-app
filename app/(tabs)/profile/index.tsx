@@ -1,183 +1,96 @@
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
-import { useAuth } from "@/lib/auth";
-import { Link } from "expo-router";
+import { useEffect, useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
+import { useProfile } from "@/lib/profile";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 
-export default function ProfileTab() {
-  const { user, logout } = useAuth();
+export default function ProfileScreen() {
+  const { getProfile, saveProfile } = useProfile();
 
-  // --- NOT LOGGED IN ---
-  if (!user) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.authCard}>
-          <Text style={styles.subtitle}>Logg inn eller registrer deg</Text>
+  const [navn, setNavn] = useState("");
+  const [kommune, setKommune] = useState("");
+  const [gårdsNr, setGårdsNr] = useState("");
+  const [bruksNr, setBruksNr] = useState("");
+  const [leverandørNr, setLeverandørNr] = useState("");
 
-          <Link href="/auth/login" asChild>
-            <TouchableOpacity style={styles.buttonPrimary}>
-              <MaterialCommunityIcons name="login" size={22} color="#fff" />
-              <Text style={styles.buttonText}>Logg inn</Text>
-            </TouchableOpacity>
-          </Link>
+  useEffect(() => {
+    load();
+  }, []);
 
-          <Link href="/auth/register" asChild>
-            <TouchableOpacity style={styles.buttonSecondary}>
-              <MaterialCommunityIcons name="account-plus" size={22} color="#fff" />
-              <Text style={styles.buttonText}>Registrer</Text>
-            </TouchableOpacity>
-          </Link>
-        </View>
-      </View>
-    );
+  async function load() {
+    const p = await getProfile();
+    if (p) {
+      setNavn(p.navn ?? "");
+      setKommune(String(p.kommune_nummer ?? ""));
+      setGårdsNr(String(p.gårds_nummer ?? ""));
+      setBruksNr(String(p.bruks_nummer ?? ""));
+      setLeverandørNr(String(p.leverandør_nummer ?? ""));
+    }
   }
 
-  // --- LOGGED IN ---
+  async function save() {
+    await saveProfile({
+      navn,
+      kommune_nummer: Number(kommune) || null,
+      gårds_nummer: Number(gårdsNr) || null,
+      bruks_nummer: Number(bruksNr) || null,
+      leverandør_nummer: Number(leverandørNr) || null,
+    });
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Hei, {user.bruker_navn ?? "Ukjent"} 👋</Text>
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>Profil</Text>
 
-      {/* Profile info card */}
-      <LinearGradient colors={["#171717ff", "#181818ff"]} style={styles.profileCard}>
-        <Text style={styles.cardTitle}>Profilinformasjon</Text>
+      <Field label="Navn" value={navn} onChange={setNavn} />
+      <Field label="Kommune nr" value={kommune} onChange={setKommune} />
+      <Field label="Gårds nr" value={gårdsNr} onChange={setGårdsNr} />
+      <Field label="Bruks nr" value={bruksNr} onChange={setBruksNr} />
+      <Field label="Leverandør nr" value={leverandørNr} onChange={setLeverandørNr} />
 
-        <ProfileRow label="Brukernavn" value={user.bruker_navn} />
-        {user.kommune_nummer && <ProfileRow label="Kommune nummer" value={user.kommune_nummer} />}
-        {user.gårds_nummer && <ProfileRow label="Gårds nummer" value={user.gårds_nummer} />}
-        {user.bruks_nummer && <ProfileRow label="Bruks nummer" value={user.bruks_nummer} />}
-        {user.leverandør_nummer && (
-          <ProfileRow label="Leverandør nummer (Fram tre)" value={user.leverandør_nummer} />
-        )}
-      </LinearGradient>
-
-      {/* Logout */}
-      <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-        <MaterialCommunityIcons name="logout" size={22} color="#8d1616ff" />
-        <Text style={styles.logoutText}>Logg ut</Text>
+      <TouchableOpacity style={styles.button} onPress={save}>
+        <MaterialCommunityIcons name="content-save" size={24} color="#fff" />
+        <Text style={styles.buttonText}>Lagre Profil</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
-/* Reusable profile row */
-function ProfileRow({ label, value }: { label: string; value: any }) {
+function Field({ label, value, onChange }: any) {
   return (
-    <View style={styles.row}>
+    <>
       <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value}</Text>
-    </View>
+      <TextInput
+        style={styles.input}
+        placeholder={label}
+        placeholderTextColor="#aaa"
+        value={value}
+        onChangeText={onChange}
+      />
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#111",
-    paddingHorizontal: 20,
-    paddingVertical: 40,
-    justifyContent: "flex-start",
-  },
-
-  title: {
+  container: { flex: 1, backgroundColor: "#111", padding: 20 },
+  title: { color: "#fff", fontSize: 26, marginBottom: 20, fontWeight: "bold" },
+  label: { color: "#bbb", marginBottom: 6 },
+  input: {
+    backgroundColor: "#222",
+    padding: 14,
+    borderRadius: 12,
     color: "#fff",
-    fontSize: 28,
-    fontWeight: "800",
-    marginBottom: 24,
-  },
-
-  subtitle: {
-    color: "#ccc",
-    fontSize: 18,
-    marginBottom: 28,
-    textAlign: "center",
-    fontWeight: "500",
-  },
-
-  /* Auth card (not logged in) */
-  authCard: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 16,
-  },
-
-  /* Profile card */
-  profileCard: {
-    padding: 20,
-    borderRadius: 16,
-    marginBottom: 30,
-    elevation: 4,
-  },
-
-  cardTitle: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "700",
-    marginBottom: 12,
-  },
-
-  row: {
     marginBottom: 16,
-  },
-
-  label: {
-    color: "#888",
-    fontSize: 14,
-  },
-
-  value: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-    marginTop: 2,
-  },
-
-  /* Buttons */
-  buttonPrimary: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#3a4bff",
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    width: "85%",
-    justifyContent: "center",
-    marginBottom: 14,
-  },
-
-  buttonSecondary: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#251e9d",
-    paddingVertical: 14,
-    paddingHorizontal: 24,
-    borderRadius: 12,
-    width: "85%",
-    justifyContent: "center",
-  },
-
-  buttonText: {
-    color: "#fff",
-    fontSize: 18,
-    marginLeft: 10,
-    fontWeight: "600",
-  },
-
-  /* Logout */
-  logoutBtn: {
-    flexDirection: "row",
     borderWidth: 1,
-    borderColor: "#8d2d2dff",
-    paddingVertical: 14,
+    borderColor: "#333",
+  },
+  button: {
+    flexDirection: "row",
+    backgroundColor: "#2e7d32",
+    padding: 16,
     borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 10,
   },
-
-  logoutText: {
-    color: "#901e1eff",
-    fontSize: 20,
-    marginLeft: 10,
-    fontWeight: "600",
-  },
+  buttonText: { marginLeft: 10, color: "#fff", fontSize: 18 },
 });

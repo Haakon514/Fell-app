@@ -2,27 +2,34 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-nati
 import { Link, router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ProfileCircle from "../../components/profileCircle";
-import { useAuth } from "@/lib/auth";
 import { LinearGradient } from "expo-linear-gradient";
 import RecentNumbersCard from "@/components/recentNumbersCard";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useProfile } from "@/lib/profile";
+import { useEffect, useState } from "react";
+import type { Profile } from "@/types/profile";
 
 const GRADIENT_CARD = ["#27272aff", "#1a191cff"];
 
 export default function HomeScreen() {
-  const { user } = useAuth();
-  const insets = useSafeAreaInsets(); // ⭐ dynamic safe area padding
+  const { getProfile } = useProfile();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    getProfile().then(setProfile);
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]} mode="padding">
+      
       {/* Profile Button */}
       <TouchableOpacity
-        style={[styles.profileWrapper, { top: insets.top + 10 }]} // ⭐ fix notch spacing
+        style={[styles.profileWrapper, { top: insets.top + 10 }]}
         onPress={() => router.push("/profile")}
       >
         <ProfileCircle
-          brukernavn={user?.bruker_navn ?? null}
-          leverandørNr={user?.leverandør_nummer ?? null}
+          
         />
       </TouchableOpacity>
 
@@ -30,8 +37,8 @@ export default function HomeScreen() {
         contentContainerStyle={[
           styles.cardsContainer,
           {
-            paddingTop: insets.top + 110, // ⭐ smooth spacing below header
-            paddingBottom: insets.bottom + 40, // ⭐ avoids tab/nav overlap
+            paddingTop: insets.top + 110,
+            paddingBottom: insets.bottom + 40,
           },
         ]}
         showsVerticalScrollIndicator={false}
@@ -41,6 +48,7 @@ export default function HomeScreen() {
           <RecentNumbersCard />
 
           <View style={styles.row}>
+            
             {/* REGLEMENT */}
             <Link href="/reglement" asChild>
               <TouchableOpacity style={styles.smallCard}>
@@ -64,9 +72,10 @@ export default function HomeScreen() {
                 <Text style={styles.smallTitle}>Volum Kalkulator</Text>
               </TouchableOpacity>
             </Link>
+
           </View>
 
-          {/* VOLUM */}
+          {/* SESSIONS */}
           <Link href="/sessions" asChild>
             <TouchableOpacity style={styles.sessionsCard}>
               <LinearGradient
