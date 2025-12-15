@@ -21,16 +21,14 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "bottom"]} mode="padding">
+    <SafeAreaView edges={["top", "left"]} mode="padding">
       
       {/* Profile Button */}
       <TouchableOpacity
         style={[styles.profileWrapper, { top: insets.top + 10 }]}
         onPress={() => router.push("/profile")}
       >
-        <ProfileCircle
-          
-        />
+        <ProfileCircle/>
       </TouchableOpacity>
 
       <ScrollView

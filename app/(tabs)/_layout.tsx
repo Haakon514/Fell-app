@@ -11,17 +11,10 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        sceneContainerStyle: {
-          backgroundColor: "#000",   // ⭐ fixes initial white background
-        },
 
-        // ⭐ THIS FIXES THE WHITE SAFE AREA ON FIRST LOAD
-        tabBarBackground: () => (
-          <View style={{ flex: 1, backgroundColor: "#111" }} />
-        ),
-
+        // Native-looking black background for React tab bar
         tabBarStyle: {
-          backgroundColor: "#111",  // let the background view handle color
+          backgroundColor: "#1a1818ff",
           height: 60 + insets.bottom,
           paddingBottom: insets.bottom,
           paddingTop: 8,
@@ -29,6 +22,11 @@ export default function TabLayout() {
           elevation: 0,
           position: "absolute",
         },
+
+        // Optional: still okay to have tabBarBackground for gradients, blur, etc.
+        tabBarBackground: () => (
+          <View style={{ flex: 1, backgroundColor: "#1a1818ff" }} />
+        ),
       }}
     >
       <Tabs.Screen
