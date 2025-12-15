@@ -4,13 +4,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";  // ⭐ ADD THIS
 import WoodAvatar from "@/assets/avatars/wood-sunset.svg";
 
 type Props = {
-  name: string | null;
+  brukernavn: string | null;
   leverandørNr?: number | null;
   onPress?: () => void;
 };
 
-export default function ProfileCircle({ name, leverandørNr, onPress }: Props) {
-  const hasUser = !!name;
+export default function ProfileCircle({ brukernavn, leverandørNr, onPress }: Props) {
+  const hasUser = !!brukernavn;
 
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
@@ -29,10 +29,10 @@ export default function ProfileCircle({ name, leverandørNr, onPress }: Props) {
 
       {/* --- TEXT --- */}
       <View style={{ alignItems: "flex-start", gap: 2 }}>
-        <Text style={styles.name}>@{name || "Anonym bruker"}</Text>
+        <Text style={styles.name}>@{brukernavn || "Anonym bruker"}</Text>
 
         {leverandørNr && (
-          <Text style={styles.leverandørNr}>Leverandør: {leverandørNr}</Text>
+          <Text style={styles.leverandørNr}>Leverandør(nr): {leverandørNr}</Text>
         )}
       </View>
     </TouchableOpacity>

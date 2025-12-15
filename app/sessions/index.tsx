@@ -105,10 +105,10 @@ export default function SessionsScreen() {
             >
               <View style={{ marginLeft: 12, flex: 1 }}>
                 <Text style={styles.cardTitle}>
-                  {item.navn || `Hogst ${formatDateWithWeekday(item.date)} Med Totalt Volum: ${item.total_volume.toFixed(2)} m³`}
+                  {item.navn || `Hogst ${formatDateWithWeekday(item.date)}`}
                 </Text>
-                <Text style={styles.cardSubtitle}>
-                  Bruker: {item.user_id || "Anonym"}
+                <Text style={{ color: '#d5d5d5ff', fontSize: 17,}}>
+                  {`Totalt Volum: ${item.total_volume.toFixed(2)} m³`}
                 </Text>
               </View>
 
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: "#fff",
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: "600",
   },
   cardSubtitle: {

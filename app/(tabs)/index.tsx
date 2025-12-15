@@ -14,14 +14,14 @@ export default function HomeScreen() {
   const insets = useSafeAreaInsets(); // ⭐ dynamic safe area padding
 
   return (
-    <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
+    <SafeAreaView style={styles.container} edges={["top", "bottom"]} mode="padding">
       {/* Profile Button */}
       <TouchableOpacity
         style={[styles.profileWrapper, { top: insets.top + 10 }]} // ⭐ fix notch spacing
         onPress={() => router.push("/profile")}
       >
         <ProfileCircle
-          name={user?.navn ?? null}
+          brukernavn={user?.bruker_navn ?? null}
           leverandørNr={user?.leverandør_nummer ?? null}
         />
       </TouchableOpacity>
@@ -65,6 +65,18 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </Link>
           </View>
+
+          {/* VOLUM */}
+          <Link href="/sessions" asChild>
+            <TouchableOpacity style={styles.sessionsCard}>
+              <LinearGradient
+                colors={GRADIENT_CARD}
+                style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
+              />
+              <MaterialCommunityIcons name="clock" size={30} color="#fff" />
+              <Text style={styles.smallTitle}>Økter</Text>
+            </TouchableOpacity>
+          </Link>
 
         </View>
       </ScrollView>
@@ -115,5 +127,16 @@ const styles = StyleSheet.create({
     color: "#fff",
     marginTop: 6,
     opacity: 0.95,
+  },
+
+  sessionsCard: {
+    flex: 1,
+    paddingVertical: 15,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.22)",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
   },
 });
