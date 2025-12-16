@@ -9,6 +9,7 @@ import {
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { useQueries } from "@/lib/useQueries";
+import { appEvents } from "@/lib/events";
 
 export default function RecentNumbersCard() {
   const { getSessionsBetweenDates } = useQueries();
@@ -82,7 +83,11 @@ export default function RecentNumbersCard() {
   }
 
   useEffect(() => {
-    loadStats();
+    const sub = appEvents.addListener("sessionUpdated", () => {
+      loadStats();
+    });
+
+    return () => sub.remove();
   }, []);
 
   return (

@@ -16,7 +16,7 @@ import * as SecureStore from "expo-secure-store";
 import ConfirmDeleteModal from "@/components/modals/confirmDeleteModal";
 import { Picker } from "@react-native-picker/picker";
 import { useQueries } from "@/lib/useQueries";
-import { Session } from "@/types/session";
+import { appEvents } from "@/lib/events";
 
 type Calc = {
   id: number;
@@ -107,6 +107,8 @@ export default function VolumeScreen() {
 
       await setSessionTotalVolume(sessionId, new_total_volume);
 
+      appEvents.emit("sessionUpdated");
+
       setCalculationsList((list) => list.filter((_, i) => i !== selectedIndex));
     }
     setShowModalToDeleteIndex(false);
@@ -126,6 +128,8 @@ export default function VolumeScreen() {
     }
 
     await setSessionTotalVolume(sessionId, (totalVolume ?? 0) - totalRemoved);
+
+    appEvents.emit("sessionUpdated");
 
     setTotalVolume((totalVolume ?? 0) - totalRemoved)
     setCalculationsList([]);
@@ -174,6 +178,8 @@ export default function VolumeScreen() {
 
     const entry = { id, diameter, length, sortimentCode, volume, result };
     setCalculationsList((prev) => [...prev, entry]);
+
+    appEvents.emit("sessionUpdated");
 
     // clear inputs
     setDiameter("");
