@@ -1,50 +1,70 @@
-# Welcome to your Expo app 👋
+# 🌲 Fell – Volumkalkulator & Øktregistrering
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Fell er en moderne mobilapp utviklet i **React Native / Expo** for å gjøre arbeid med tømmer, volumkalkulering og øktlogging enkelt og effektivt.  
+Appen tilbyr rask beregning, oversiktlige statistikker og et brukervennlig grensesnitt i mørk drakt.
 
-## Get started
+---
 
-1. Install dependencies
+## 🚀 Funksjoner
 
-   ```bash
-   npm install
-   ```
+### 📊 **Volumkalkulator**
+- Legg inn dimensjoner og lengder
+- Automatisk volumkalkulasjon i m³
+- Lagre kalkulasjoner som økter
 
-2. Start the app
+### 📅 **Øktoversikt**
+- Se totalvolum for:
+  - Denne uken
+  - Denne måneden  
+- Lagrede økter kan gjennomgås når som helst
 
-   ```bash
-   npx expo start
-   ```
+### 👤 **Profil**
+- Lag og rediger personlig profil  
+- Appen viser personlig hilsing på startsiden
 
-In the output, you'll find options to open the app in a
+### ⚙️ **Reglement**
+- Innebygde tabeller for tømmerdimensjoner og standarder  
+- Presentert i moderne dark mode-layout
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 📱 Installasjon av APK
 
-## Get a fresh project
+Last ned siste versjon av appen:
 
-When you're ready, run:
+👉 **[Installer Fell APK](https://expo.dev/accounts/haakon514/projects/fell-app/builds/073228ec-e8bc-4bf7-8f7c-818b72bc2631)**
+
+### Installer på Android:
+1. Åpne linken i Chrome på telefonen  
+2. Trykk **Last ned**  
+3. Når filen er lastet ned → trykk **Installer**  
+4. Hvis telefonen spør:  
+   *“Allow installation from unknown apps?”*  
+   → Trykk **Allow**
+
+---
+
+## 🛠️ Teknologi
+
+| Teknologi | Bruk |
+|----------|------|
+| **React Native** | App-utvikling |
+| **Expo** | Build system & runtime |
+| **Expo Router** | Navigasjon |
+| **SQLite** | Lokal lagring av økter |
+| **Reanimated / Animated** | UI-animasjoner |
+| **LinearGradient & BlurView** | UI-effekter |
+
+---
+
+## 📦 Utvikling – Kjør prosjektet lokalt
 
 ```bash
-npm run reset-project
-```
+git clone <repo-url>
+cd fell-app
+npm install
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
+npx expo start
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
