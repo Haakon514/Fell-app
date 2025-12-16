@@ -14,7 +14,7 @@ export default function TabLayout() {
 
         // Native-looking black background for React tab bar
         tabBarStyle: {
-          backgroundColor: "#1a1818ff",
+          backgroundColor: "#1",
           height: 60 + insets.bottom,
           paddingBottom: insets.bottom,
           paddingTop: 8,
@@ -25,7 +25,7 @@ export default function TabLayout() {
 
         // Optional: still okay to have tabBarBackground for gradients, blur, etc.
         tabBarBackground: () => (
-          <View style={{ flex: 1, backgroundColor: "#1a1818ff" }} />
+          <View style={{ flex: 1, backgroundColor: "#0f0f0f" }} />
         ),
       }}
     >

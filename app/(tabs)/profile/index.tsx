@@ -61,10 +61,10 @@ export default function ProfileScreen() {
 
         <View style={styles.infoBox}>
           <ProfileRow label="Navn" value={profile.navn} />
-          <ProfileRow label="Kommune nr" value={profile.kommune_nummer} />
-          <ProfileRow label="Gårds nr" value={profile.gårds_nummer} />
-          <ProfileRow label="Bruks nr" value={profile.bruks_nummer} />
-          <ProfileRow label="Leverandør nr" value={profile.leverandør_nummer} />
+          <ProfileRow label="Kommune nummer" value={profile.kommune_nummer} />
+          <ProfileRow label="Gårds nummer" value={profile.gårds_nummer} />
+          <ProfileRow label="Bruks nummer" value={profile.bruks_nummer} />
+          <ProfileRow label="Leverandør nummer" value={profile.leverandør_nummer} />
         </View>
 
         <TouchableOpacity 
@@ -86,10 +86,10 @@ export default function ProfileScreen() {
       <Text style={styles.title}>Rediger Profil</Text>
 
       <Field label="Navn" value={navn} onChange={setNavn} />
-      <Field label="Kommune nr" value={kommune} onChange={setKommune} />
-      <Field label="Gårds nr" value={gårdsNr} onChange={setGårdsNr} />
-      <Field label="Bruks nr" value={bruksNr} onChange={setBruksNr} />
-      <Field label="Leverandør nr" value={leverandørNr} onChange={setLeverandørNr} />
+      <Field label="Kommune nummer" value={kommune} onChange={setKommune} />
+      <Field label="Gårds nummer" value={gårdsNr} onChange={setGårdsNr} />
+      <Field label="Bruks nummer" value={bruksNr} onChange={setBruksNr} />
+      <Field label="Leverandør nummer" value={leverandørNr} onChange={setLeverandørNr} />
 
       <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <MaterialCommunityIcons name="content-save" size={24} color="#fff" />
@@ -126,8 +126,19 @@ function ProfileRow({ label, value }: any) {
 
 // --- STYLES ---
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#111", padding: 20 },
-  title: { color: "#fff", fontSize: 26, marginBottom: 20, fontWeight: "bold" },
+  container: {
+    flex: 1, 
+    backgroundColor: "#111",
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+  },
+
+  title: { 
+    color: "#fff", 
+    fontSize: 26, 
+    marginBottom: 20, 
+    fontWeight: "bold" 
+  },
 
   // View Mode
   infoBox: {
@@ -163,7 +174,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     flexDirection: "row",
-    backgroundColor: "#2e7d32",
+    backgroundColor: "#2a32d2ff",
     padding: 16,
     borderRadius: 12,
     justifyContent: "center",

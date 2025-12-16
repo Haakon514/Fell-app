@@ -97,6 +97,9 @@ export default function SessionsScreen() {
         renderItem={({ item, section }) => {
           const isOpen = openSections[section.title];
           if (!isOpen) return null;
+          if (item.total_volume === null){
+            item.total_volume = 0;
+          }
 
           return (
             <TouchableOpacity
@@ -108,7 +111,7 @@ export default function SessionsScreen() {
                   {item.navn || `Hogst ${formatDateWithWeekday(item.date)}`}
                 </Text>
                 <Text style={{ color: '#d5d5d5ff', fontSize: 17,}}>
-                  {`Totalt Volum: ${item.total_volume.toFixed(2)} m³`}
+                  {`Totalt Volum: ${item.total_volume.toFixed(2) ? item.total_volume.toFixed(2) : 0} m³`}
                 </Text>
               </View>
 

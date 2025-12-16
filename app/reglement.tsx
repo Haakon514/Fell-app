@@ -4,6 +4,7 @@ import { View, Text, StyleSheet, ScrollView } from "react-native";
 export default function Reglement() {
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 40 }}>
+
       {/* Title */}
       <Text style={styles.title}>Sagstømmer</Text>
       <Text style={styles.subtitle}>Kappereglement</Text>
@@ -13,13 +14,16 @@ export default function Reglement() {
         <View style={styles.rowHeader}>
           <Text style={styles.headerCell}>Kontrakt</Text>
           <Text style={styles.headerCell}>Navn</Text>
+
           <View style={styles.headerGroup}>
             <Text style={styles.headerCell}>Diameter (cm ub)</Text>
+
             <View style={styles.subHeaderRow}>
               <Text style={styles.subHeaderCell}>Min</Text>
               <Text style={styles.subHeaderCell}>Maks</Text>
             </View>
           </View>
+
           <Text style={styles.headerCell}>Lengder (dm)</Text>
         </View>
 
@@ -27,10 +31,12 @@ export default function Reglement() {
         <View style={styles.row}>
           <Text style={styles.cell}>142</Text>
           <Text style={styles.cell}>Gran sagt</Text>
+
           <View style={styles.cellGroup}>
             <Text style={styles.cell}>13</Text>
             <Text style={styles.cell}>55</Text>
           </View>
+
           <Text style={styles.cell}>37, 43, 49, 52, 55</Text>
         </View>
 
@@ -38,15 +44,16 @@ export default function Reglement() {
         <View style={styles.row}>
           <Text style={styles.cell}>242</Text>
           <Text style={styles.cell}>Furu sagt</Text>
+
           <View style={styles.cellGroup}>
             <Text style={styles.cell}>13</Text>
             <Text style={styles.cell}>55</Text>
           </View>
+
           <Text style={styles.cell}>43, 49, 52, 55</Text>
         </View>
       </View>
 
-      {/* Spacing */}
       <View style={{ height: 24 }} />
 
       {/* Title 2 */}
@@ -98,43 +105,45 @@ export default function Reglement() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 18,
-    backgroundColor: "#f7f7f7",
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+    backgroundColor: "#0f0f0f", // DARK MODE BACKGROUND
   },
 
   title: {
     fontSize: 26,
     fontWeight: "800",
-    color: "#333",
+    color: "#ffffff", // WHITE
   },
   subtitle: {
     fontSize: 20,
     fontWeight: "700",
     marginTop: 8,
     marginBottom: 10,
-    color: "#444",
+    color: "#e5e5e5", // LIGHT GREY
   },
 
-  /* Table 1 */
+  /* TABLE 1 — DARK MODE */
   table: {
     borderWidth: 1,
-    borderColor: "#2f9e44",
+    borderColor: "#41854f", // darker green border
     borderRadius: 8,
     overflow: "hidden",
+    backgroundColor: "#1a1a1a",
   },
   rowHeader: {
     flexDirection: "row",
-    backgroundColor: "#e9f5e9",
+    backgroundColor: "#132a17", // dark green-ish background
     paddingVertical: 10,
     paddingHorizontal: 6,
     borderBottomWidth: 1,
-    borderColor: "#2f9e44",
+    borderColor: "#41854f",
   },
   headerCell: {
     flex: 1,
     fontWeight: "700",
     fontSize: 13,
-    color: "#2f9e44",
+    color: "#7dff9e", // bright green
     textAlign: "center",
   },
   headerGroup: {
@@ -147,7 +156,7 @@ const styles = StyleSheet.create({
   subHeaderCell: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#2f9e44",
+    color: "#7dff9e",
   },
 
   row: {
@@ -155,15 +164,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 4,
     borderBottomWidth: 1,
-    borderColor: "#cfcfcf",
-    backgroundColor: "white",
+    borderColor: "#2a2a2a",
+    backgroundColor: "#171717",
   },
 
   cell: {
     flex: 1,
     textAlign: "center",
     fontSize: 14,
-    color: "#333",
+    color: "#e6e6e6",
   },
   cellGroup: {
     flex: 1.2,
@@ -171,7 +180,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
   },
 
-  /* Length Table */
+  /* LENGTH TABLE */
   lengthTable: {
     marginTop: 10,
   },

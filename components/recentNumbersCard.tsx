@@ -14,84 +14,70 @@ export default function RecentNumbersCard() {
   const { getSessionsBetweenDates } = useQueries();
   const scale = useRef(new Animated.Value(1)).current;
 
+  const [weekTotal, setWeekTotal] = useState<number>(0);
   const [monthTotal, setMonthTotal] = useState<number>(0);
-  const [yearTotal, setYearTotal] = useState<number>(0);
 
+  // Helpers
   function toDayStart(date: Date) {
-    return new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      0,
-      0,
-      0
-    ).toISOString();
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0)
+      .toISOString();
   }
 
   function toDayEnd(date: Date) {
-    return new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-      23,
-      59,
-      59
-    ).toISOString();
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59)
+      .toISOString();
   }
 
   function getCurrentMonthRange() {
     const now = new Date();
     const start = new Date(now.getFullYear(), now.getMonth(), 1);
-    return {
-      start: toDayStart(start),
-      end: toDayEnd(now),
-    };
+    return { start: toDayStart(start), end: toDayEnd(now) };
   }
 
-  function getCurrentYearRange() {
+  // ⭐ NEW: Week calculation
+  function getCurrentWeekRange() {
     const now = new Date();
-    const start = new Date(now.getFullYear(), 0, 1);
+
+    // Sunday (0) → convert to Monday (-6)
+    const day = now.getDay();
+    const diffToMonday = (day === 0 ? -6 : 1 - day);
+
+    const monday = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + diffToMonday
+    );
+
     return {
-      start: toDayStart(start),
+      start: toDayStart(monday),
       end: toDayEnd(now),
     };
   }
 
   async function loadStats() {
+    const week = getCurrentWeekRange();
     const month = getCurrentMonthRange();
-    const year = getCurrentYearRange();
 
-    const monthSessions = await getSessionsBetweenDates(
-      month.start,
-      month.end
+    const weekSessions = await getSessionsBetweenDates(week.start, week.end);
+    const monthSessions = await getSessionsBetweenDates(month.start, month.end);
+
+    const weekSum = (weekSessions || []).reduce(
+      (sum, s) => sum + Number(s.total_volume || 0),
+      0
     );
-    const yearSessions = await getSessionsBetweenDates(year.start, year.end);
 
     const monthSum = (monthSessions || []).reduce(
       (sum, s) => sum + Number(s.total_volume || 0),
       0
     );
 
-    const yearSum = (yearSessions || []).reduce(
-      (sum, s) => sum + Number(s.total_volume || 0),
-      0
-    );
-
+    setWeekTotal(weekSum);
     setMonthTotal(monthSum);
-    setYearTotal(yearSum);
 
-    // liten “pop” når tallene oppdateres
+    // Cute scale animation
     Animated.sequence([
-      Animated.spring(scale, {
-        toValue: 1.06,
-        friction: 6,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scale, {
-        toValue: 1,
-        friction: 7,
-        useNativeDriver: true,
-      }),
+      Animated.spring(scale, { toValue: 1.06, friction: 6, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1, friction: 7, useNativeDriver: true }),
     ]).start();
   }
 
@@ -101,12 +87,8 @@ export default function RecentNumbersCard() {
 
   return (
     <Animated.View style={[styles.cardWrapper, { transform: [{ scale }] }]}>
-      <TouchableOpacity
-        activeOpacity={0.9}
-        style={styles.touchArea}
-      >
+      <TouchableOpacity activeOpacity={0.9} style={styles.touchArea}>
 
-        {/* Gradient-bakgrunn (som på inspirasjonsbildet) */}
         <LinearGradient
           colors={["#5c5d60ff", "#2c2d31ff", "#1b1b1fff"]}
           start={{ x: 0, y: 0 }}
@@ -114,40 +96,33 @@ export default function RecentNumbersCard() {
           style={styles.gradient}
         />
 
-        {/* Glass-lag */}
-        <BlurView
-          intensity={20}
-          tint="dark"
-          style={styles.blur}
-        >
-          {/* Header / tittel */}
+        <BlurView intensity={20} tint="dark" style={styles.blur}>
+
           <View style={styles.headerRow}>
             <View style={styles.badge}>
               <Text style={styles.badgeText}>Volum</Text>
             </View>
-            <Text style={styles.headerSub}>
-              Oversikt for måneden og året
-            </Text>
+            <Text style={styles.headerSub}>Oversikt for uke og måned</Text>
           </View>
 
-          {/* Innhold med to blokker */}
           <View style={styles.contentRow}>
             <View style={styles.statBlockPrimary}>
-              <Text style={styles.label}>Denne måneden</Text>
+              <Text style={styles.label}>Denne uken</Text>
               <Text style={styles.valuePrimary}>
-                {Number(monthTotal || 0).toFixed(2)} m³
+                {weekTotal.toFixed(2)} m³
               </Text>
             </View>
 
             <View style={styles.verticalDivider} />
 
             <View style={styles.statBlockSecondary}>
-              <Text style={styles.label}>Dette året</Text>
+              <Text style={styles.label}>Denne måneden</Text>
               <Text style={styles.valueSecondary}>
-                {Number(yearTotal || 0).toFixed(2)} m³
+                {monthTotal.toFixed(2)} m³
               </Text>
             </View>
           </View>
+
         </BlurView>
       </TouchableOpacity>
     </Animated.View>
@@ -155,9 +130,7 @@ export default function RecentNumbersCard() {
 }
 
 const styles = StyleSheet.create({
-  cardWrapper: {
-    width: "100%",
-  },
+  cardWrapper: { width: "100%" },
   touchArea: {
     borderRadius: 25,
     overflow: "hidden",
@@ -166,9 +139,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  gradient: {
-    ...StyleSheet.absoluteFillObject,
-  },
+  gradient: { ...StyleSheet.absoluteFillObject },
 
   blur: {
     ...StyleSheet.absoluteFillObject,
@@ -182,7 +153,6 @@ const styles = StyleSheet.create({
 
   headerRow: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 12,
   },
@@ -192,29 +162,16 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "rgba(255,255,255,0.18)",
   },
-  badgeText: {
-    color: "#FFFFFF",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  headerSub: {
-    color: "rgba(255,255,255,0.78)",
-    fontSize: 12,
-  },
+  badgeText: { color: "#fff", fontSize: 12, fontWeight: "600" },
+  headerSub: { color: "rgba(255,255,255,0.78)", fontSize: 12 },
 
   contentRow: {
     flexDirection: "row",
-    alignItems: "stretch",
     justifyContent: "space-between",
   },
 
-  statBlockPrimary: {
-    flex: 1.2,
-  },
-  statBlockSecondary: {
-    flex: 1,
-    alignItems: "flex-end",
-  },
+  statBlockPrimary: { flex: 1.2 },
+  statBlockSecondary: { flex: 1, alignItems: "flex-end" },
 
   label: {
     fontSize: 13,
@@ -222,17 +179,8 @@ const styles = StyleSheet.create({
     color: "rgba(255,255,255,0.78)",
     marginBottom: 4,
   },
-
-  valuePrimary: {
-    fontSize: 19,
-    fontWeight: "800",
-    color: "#FFFFFF",
-  },
-  valueSecondary: {
-    fontSize: 19,
-    fontWeight: "700",
-    color: "rgba(255,255,255,0.9)",
-  },
+  valuePrimary: { fontSize: 19, fontWeight: "800", color: "#fff" },
+  valueSecondary: { fontSize: 19, fontWeight: "700", color: "#fff" },
 
   verticalDivider: {
     width: 1,
