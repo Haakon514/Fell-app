@@ -90,6 +90,10 @@ export default function RecentNumbersCard() {
     return () => sub.remove();
   }, []);
 
+  useEffect(() => {
+    loadStats();
+  }, []);
+
   return (
     <Animated.View style={[styles.cardWrapper, { transform: [{ scale }] }]}>
       <TouchableOpacity activeOpacity={0.9} style={styles.touchArea}>
