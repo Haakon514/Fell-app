@@ -39,7 +39,6 @@ export default function SessionsScreen() {
       `SELECT * FROM sessions ORDER BY date DESC`
     );
     setSessions(rows);
-    console.log("getting data")
   }
 
   useEffect(() => {
