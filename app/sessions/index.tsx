@@ -10,9 +10,14 @@ import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
 import { Session } from "@/types/session";
+import { useQueries } from "@/lib/useQueries";
+import ConfirmDeleteModal from "@/components/modals/confirmDeleteModal";
+import { appEvents } from "@/lib/events";
 
 export default function SessionsScreen() {
+  const [showModalToDeleteSession, setShowModalToDeleteSession] = useState(false);
   const db = useSQLiteContext();
+  const { deleteAllCalculationsFromAGivenSession } = useQueries();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
@@ -32,6 +37,14 @@ export default function SessionsScreen() {
       year: "2-digit",
     }).format(d);
     return text.charAt(0).toUpperCase() + text.slice(1);
+  }
+
+  async function handleDeleteSession(id: number) {
+    setSessions((prev) => prev.filter((s) => s.id !== id)); // update session list state
+
+    await deleteAllCalculationsFromAGivenSession(id); // delete the session from the database
+
+    appEvents.emit("sessionUpdated"); // emit that an update on session data has occured
   }
 
   async function loadData() {
@@ -70,6 +83,7 @@ export default function SessionsScreen() {
 
       <SectionList
         sections={sections}
+        extraData={sessions}
         keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={<Text style={styles.empty}>Ingen økter</Text>}
         stickySectionHeadersEnabled={false}
@@ -96,30 +110,46 @@ export default function SessionsScreen() {
         renderItem={({ item, section }) => {
           const isOpen = openSections[section.title];
           if (!isOpen) return null;
-          if (item.total_volume === null){
-            item.total_volume = 0;
-          }
+
+          const total = Number(item.total_volume ?? 0);
 
           return (
-            <TouchableOpacity
-              style={styles.card}
-              onPress={() => router.push(`/sessions/${item.id}`)}
-            >
-              <View style={{ marginLeft: 12, flex: 1 }}>
-                <Text style={styles.cardTitle}>
-                  {item.navn || `Hogst ${formatDateWithWeekday(item.date)}`}
-                </Text>
-                <Text style={{ color: '#d5d5d5ff', fontSize: 17,}}>
-                  {`Totalt Volum: ${item.total_volume.toFixed(2) ? item.total_volume.toFixed(2) : 0} m³`}
-                </Text>
-              </View>
+            <View style={styles.itemRow}>
+              {/* Main tap area */}
+              <TouchableOpacity
+                style={styles.itemCard}
+                onPress={() => router.push(`/sessions/${item.id}`)}
+                activeOpacity={0.8}
+              >
+                <View style={styles.itemTextWrap}>
+                  <Text style={styles.cardTitle} numberOfLines={1}>
+                    {item.navn || `Hogst ${formatDateWithWeekday(item.date)}`}
+                  </Text>
+                  <Text style={styles.itemMeta}>
+                    Totalt Volum: {total.toFixed(2)} m³
+                  </Text>
+                </View>
 
-              <MaterialCommunityIcons
-                name="chevron-right"
-                size={28}
-                color="#888"
+                <MaterialCommunityIcons name="chevron-right" size={26} color="#777" />
+              </TouchableOpacity>
+
+              {/* Delete button */}
+              <TouchableOpacity
+                style={styles.trashBtn}
+                onPress={() => setShowModalToDeleteSession(true)}
+                activeOpacity={0.8}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <MaterialCommunityIcons name="trash-can" size={22} color="#ca2222ff" />
+              </TouchableOpacity>
+
+              <ConfirmDeleteModal
+                visible={showModalToDeleteSession}
+                message="Vil du virkelig slette denne økten?"
+                onCancel={() => setShowModalToDeleteSession(false)}
+                onConfirm={() => handleDeleteSession(item.id)}
               />
-            </TouchableOpacity>
+            </View>
           );
         }}
       />
@@ -184,5 +214,45 @@ const styles = StyleSheet.create({
     color: "#aaa",
     fontSize: 13,
     marginTop: 2,
+  },
+  itemRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+
+  itemCard: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#1e1e1e",
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#2a2a2a",
+  },
+
+  itemTextWrap: {
+    flex: 1,
+    marginLeft: 6,
+    marginRight: 10,
+  },
+
+  itemMeta: {
+    color: "#cfcfcf",
+    fontSize: 15,
+    marginTop: 2,
+  },
+
+  trashBtn: {
+    marginLeft: 10,
+    height: 75,
+    width: 48,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1a1a1a",
+    borderWidth: 1,
+    borderColor: "#2a2a2a",
   },
 });

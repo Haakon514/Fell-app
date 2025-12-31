@@ -49,6 +49,12 @@ export function useQueries() {
     )
   }
 
+  async function deleteAllCalculationsFromAGivenSession(id: number){
+    await db.runAsync(
+      `DELETE FROM sessions WHERE id = ?`, [id]
+    )
+  }
+
   return {
     getUsers,
     getSessions,
@@ -57,5 +63,6 @@ export function useQueries() {
     setSessionTotalVolume,
     getTreeCalculations,
     deleteTreeCalculation,
+    deleteAllCalculationsFromAGivenSession
   };
 }

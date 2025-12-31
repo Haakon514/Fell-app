@@ -7,16 +7,13 @@
     "scheme": "fellapp",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
-
     "ios": {
       "supportsTablet": true
     },
-
     "androidNavigationBar": {
       "backgroundColor": "#111",
       "barStyle": "light-content"
     },
-
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#111"
@@ -25,11 +22,9 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.fellapp"
     },
-
     "web": {
       "output": "static"
     },
-
     "plugins": [
       "expo-router",
       [
@@ -38,7 +33,6 @@
           "image": "./assets/splash.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-
           "backgroundColor": "#111",
           "dark": {
             "backgroundColor": "#111"
@@ -47,10 +41,16 @@
       ],
       "expo-sqlite"
     ],
-
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "4954a1c7-4a96-49b3-a81e-f30a6d7f85ac"
+      }
+    },
+    "owner": "haakon514"
   }
 }
