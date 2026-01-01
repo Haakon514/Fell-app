@@ -7,31 +7,44 @@
     "scheme": "fellapp",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
+
+    "icon": "./assets/icon.png",
+
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#111"
+    },
+
     "ios": {
       "supportsTablet": true
     },
+
     "androidNavigationBar": {
       "backgroundColor": "#111",
       "barStyle": "light-content"
     },
+
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#111"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.fellapp"
     },
+
     "web": {
       "output": "static"
     },
+
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
           "image": "./assets/splash.png",
-          "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#111",
           "dark": {
@@ -41,16 +54,19 @@
       ],
       "expo-sqlite"
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
+
     "extra": {
       "router": {},
       "eas": {
         "projectId": "4954a1c7-4a96-49b3-a81e-f30a6d7f85ac"
       }
     },
+
     "owner": "haakon514"
   }
 }

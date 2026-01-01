@@ -1,11 +1,5 @@
-import React, { useEffect, useState, useMemo } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  SectionList,
-  TouchableOpacity,
-} from "react-native";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
+import { View, Text, StyleSheet, SectionList, TouchableOpacity } from "react-native";
 import { router } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSQLiteContext } from "expo-sqlite";
@@ -15,17 +9,18 @@ import ConfirmDeleteModal from "@/components/modals/confirmDeleteModal";
 import { appEvents } from "@/lib/events";
 
 export default function SessionsScreen() {
-  const [showModalToDeleteSession, setShowModalToDeleteSession] = useState(false);
   const db = useSQLiteContext();
   const { deleteAllCalculationsFromAGivenSession } = useQueries();
+
   const [sessions, setSessions] = useState<Session[]>([]);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
 
+  // ✅ modal state: store WHICH session is being deleted
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteSessionId, setDeleteSessionId] = useState<number | null>(null);
+
   function toggleSection(title: string) {
-    setOpenSections((prev) => ({
-      ...prev,
-      [title]: !prev[title],
-    }));
+    setOpenSections((prev) => ({ ...prev, [title]: !prev[title] }));
   }
 
   function formatDateWithWeekday(dateString: string) {
@@ -39,24 +34,47 @@ export default function SessionsScreen() {
     return text.charAt(0).toUpperCase() + text.slice(1);
   }
 
-  async function handleDeleteSession(id: number) {
-    setSessions((prev) => prev.filter((s) => s.id !== id)); // update session list state
-
-    await deleteAllCalculationsFromAGivenSession(id); // delete the session from the database
-
-    appEvents.emit("sessionUpdated"); // emit that an update on session data has occured
-  }
-
-  async function loadData() {
-    const rows = await db.getAllAsync<Session>(
-      `SELECT * FROM sessions ORDER BY date DESC`
-    );
+  const loadData = useCallback(async () => {
+    const rows = await db.getAllAsync<Session>(`SELECT * FROM sessions ORDER BY date DESC`);
     setSessions(rows);
-  }
+  }, [db]);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
+
+  // ✅ IMPORTANT: refresh list when totals change (delete calc / update totals)
+  useEffect(() => {
+    const sub = appEvents.addListener("sessionUpdated", () => {
+      loadData();
+    });
+    return () => sub.remove();
+  }, [loadData]);
+
+  function openDeleteModal(sessionId: number) {
+    setDeleteSessionId(sessionId);
+    setDeleteOpen(true);
+  }
+
+  function closeDeleteModal() {
+    setDeleteOpen(false);
+    setDeleteSessionId(null);
+  }
+
+  async function handleDeleteSession() {
+    if (deleteSessionId == null) return;
+
+    const id = deleteSessionId;
+
+    // optimistic update
+    setSessions((prev) => prev.filter((s) => s.id !== id));
+    closeDeleteModal();
+
+    await deleteAllCalculationsFromAGivenSession(id);
+
+    // optional: if your useQueries already emits, you can remove this
+    appEvents.emit("sessionUpdated");
+  }
 
   const sections = useMemo(() => {
     const grouped: Record<string, Session[]> = {};
@@ -81,9 +99,16 @@ export default function SessionsScreen() {
         <Text style={styles.topBarTitle}>Lagrede Kalkulasjoner</Text>
       </View>
 
+      {/* ✅ One modal for the whole screen */}
+      <ConfirmDeleteModal
+        visible={deleteOpen}
+        message="Vil du virkelig slette denne økten?"
+        onCancel={closeDeleteModal}
+        onConfirm={handleDeleteSession}
+      />
+
       <SectionList
         sections={sections}
-        extraData={sessions}
         keyExtractor={(item) => item.id.toString()}
         ListEmptyComponent={<Text style={styles.empty}>Ingen økter</Text>}
         stickySectionHeadersEnabled={false}
@@ -91,13 +116,8 @@ export default function SessionsScreen() {
           const isOpen = openSections[title];
 
           return (
-            <TouchableOpacity
-              onPress={() => toggleSection(title)}
-              style={styles.headerCard}
-            >
-              <Text style={styles.headerCardText}>
-                {formatDateWithWeekday(title)}
-              </Text>
+            <TouchableOpacity onPress={() => toggleSection(title)} style={styles.headerCard}>
+              <Text style={styles.headerCardText}>{formatDateWithWeekday(title)}</Text>
 
               <MaterialCommunityIcons
                 name={isOpen ? "chevron-up" : "chevron-down"}
@@ -115,7 +135,6 @@ export default function SessionsScreen() {
 
           return (
             <View style={styles.itemRow}>
-              {/* Main tap area */}
               <TouchableOpacity
                 style={styles.itemCard}
                 onPress={() => router.push(`/sessions/${item.id}`)}
@@ -125,30 +144,20 @@ export default function SessionsScreen() {
                   <Text style={styles.cardTitle} numberOfLines={1}>
                     {item.navn || `Hogst ${formatDateWithWeekday(item.date)}`}
                   </Text>
-                  <Text style={styles.itemMeta}>
-                    Totalt Volum: {total.toFixed(2)} m³
-                  </Text>
+                  <Text style={styles.itemMeta}>Totalt Volum: {total.toFixed(2)} m³</Text>
                 </View>
 
                 <MaterialCommunityIcons name="chevron-right" size={26} color="#777" />
               </TouchableOpacity>
 
-              {/* Delete button */}
               <TouchableOpacity
                 style={styles.trashBtn}
-                onPress={() => setShowModalToDeleteSession(true)}
+                onPress={() => openDeleteModal(item.id)}
                 activeOpacity={0.8}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <MaterialCommunityIcons name="trash-can" size={22} color="#ca2222ff" />
               </TouchableOpacity>
-
-              <ConfirmDeleteModal
-                visible={showModalToDeleteSession}
-                message="Vil du virkelig slette denne økten?"
-                onCancel={() => setShowModalToDeleteSession(false)}
-                onConfirm={() => handleDeleteSession(item.id)}
-              />
             </View>
           );
         }}
@@ -197,30 +206,11 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "600",
   },
-  card: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#1e1e1e",
-    padding: 14,
-    borderRadius: 12,
-    marginBottom: 10,
-  },
-  cardTitle: {
-    color: "#fff",
-    fontSize: 18,
-    fontWeight: "600",
-  },
-  cardSubtitle: {
-    color: "#aaa",
-    fontSize: 13,
-    marginTop: 2,
-  },
   itemRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
   },
-
   itemCard: {
     flex: 1,
     flexDirection: "row",
@@ -231,19 +221,21 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#2a2a2a",
   },
-
   itemTextWrap: {
     flex: 1,
     marginLeft: 6,
     marginRight: 10,
   },
-
+  cardTitle: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "600",
+  },
   itemMeta: {
     color: "#cfcfcf",
     fontSize: 15,
     marginTop: 2,
   },
-
   trashBtn: {
     marginLeft: 10,
     height: 75,

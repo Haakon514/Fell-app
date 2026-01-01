@@ -31,16 +31,25 @@ export default function VolumeScreen() {
   const [showModalToDeleteIndex, setShowModalToDeleteIndex] = useState(false);
   const [showModalToDeleteList, setShowModalToDeleteList] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+
   const [sessionId, setSessionId] = useState<number | null>(null);
   const [totalVolume, setTotalVolume] = useState<number | null>(null);
+
   const db = useSQLiteContext();
   const { getSessionById, setSessionTotalVolume, deleteTreeCalculation } = useQueries();
   const createSession = useCreateSession();
+
   const [diameter, setDiameter] = useState("");
   const [length, setLength] = useState("");
+
+  // ✅ required sortiment
   const [sortimentCode, setSortimentCode] = useState("");
+  const [sortimentError, setSortimentError] = useState(false);
+  const [sortimentTouched, setSortimentTouched] = useState(false);
+
   const [result, setResult] = useState<string | null>(null);
   const [volume, setVolume] = useState<number | null>(null);
+
   const [calculationsList, setCalculationsList] = useState<Calc[]>([]);
   const date_today = new Date().toISOString().slice(0, 10);
 
@@ -54,39 +63,30 @@ export default function VolumeScreen() {
     { label: "Pallevirke Furu (231)", value: "231" },
   ];
 
-  /* helper functions bellow */
+  /* helper functions */
 
   async function createOrGetSession() {
-    // try to get an existing session from SecureStore
     const existingSession = await SecureStore.getItemAsync("sessionId");
 
-    // if no existing session found, create new session
     if (!existingSession) {
-
       const createdId = await createSession();
       setSessionId(createdId);
 
       await SecureStore.setItemAsync("sessionId", createdId.toString());
-
       return;
     } else {
-      // get the existing session from DB to check date
       const session = await getSessionById(parseInt(existingSession));
-      setTotalVolume(session?.total_volume || null);
+      setTotalVolume(session?.total_volume ?? 0);
 
-      // (creates a new session every day)
       if (session?.date !== date_today) {
-        
         const createdId = await createSession();
         setSessionId(createdId);
         setTotalVolume(0);
 
         await SecureStore.setItemAsync("sessionId", createdId.toString());
-
         return;
       }
 
-      // if dates match, use existing session
       setSessionId(parseInt(existingSession));
     }
   }
@@ -96,7 +96,7 @@ export default function VolumeScreen() {
     setShowModalToDeleteIndex(true);
   }
 
-  // handle delete 1 item
+  // delete 1 item
   const handleDelete = async () => {
     if (selectedIndex !== null) {
       const item = calculationsList[selectedIndex];
@@ -104,7 +104,6 @@ export default function VolumeScreen() {
       setTotalVolume(new_total_volume);
 
       await deleteTreeCalculation(item.id);
-
       await setSessionTotalVolume(sessionId, new_total_volume);
 
       appEvents.emit("sessionUpdated");
@@ -112,68 +111,66 @@ export default function VolumeScreen() {
       setCalculationsList((list) => list.filter((_, i) => i !== selectedIndex));
     }
     setShowModalToDeleteIndex(false);
-  }
+  };
 
-  //handle deleting hole list
-  const handleDeleteHoleList = async() => {
-    if(calculationsList.length === 0) return;
+  // delete whole list
+  const handleDeleteHoleList = async () => {
+    if (calculationsList.length === 0) return;
 
-    const totalRemoved = calculationsList.reduce(
-      (sum, item) => sum + item.volume,
-      0
-    );
+    const totalRemoved = calculationsList.reduce((sum, item) => sum + item.volume, 0);
 
-    for(const item of calculationsList){
+    for (const item of calculationsList) {
       await deleteTreeCalculation(item.id);
     }
 
-    await setSessionTotalVolume(sessionId, (totalVolume ?? 0) - totalRemoved);
+    const newTotal = (totalVolume ?? 0) - totalRemoved;
+    await setSessionTotalVolume(sessionId, newTotal);
 
     appEvents.emit("sessionUpdated");
 
-    setTotalVolume((totalVolume ?? 0) - totalRemoved)
+    setTotalVolume(newTotal);
     setCalculationsList([]);
     setShowModalToDeleteList(false);
-  }
+  };
 
-  // handle calculation
+  // calculate
   const calculate = () => {
     const d = parseFloat(diameter);
     const l = parseFloat(length);
 
     if (isNaN(d) || isNaN(l)) {
       setResult(null);
+      setVolume(null);
       return;
     }
 
     const radius = d / 2 / 100;
-    const volume = Math.PI * radius * radius * l;
-    setResult(volume.toFixed(3) + " m³");
-    setVolume(volume);
+    const v = Math.PI * radius * radius * l;
+    setResult(v.toFixed(3) + " m³");
+    setVolume(v);
   };
 
+  // ✅ add calculation (requires sortiment)
   const handleAddToList = async () => {
     if (!result || !volume) return;
 
-    // save to database
+    if (!sortimentCode) {
+      setSortimentTouched(true);
+      setSortimentError(true);
+      return;
+    }
+
     const insertResult = await db.runAsync(
       `INSERT INTO treecalculations (session_id, sortiment_kode, diameter, lengde, volum, timestamp)
-      VALUES (?, ?, ?, ?, ?, ?)`,
-      [
-        sessionId,
-        sortimentCode,
-        diameter,
-        length,
-        volume,
-        new Date().toISOString().slice(0, 10),
-      ]
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [sessionId, sortimentCode, diameter, length, volume, new Date().toISOString().slice(0, 10)]
     );
 
     const id = insertResult.lastInsertRowId;
+
     const new_total_volume = (totalVolume ?? 0) + volume;
     setTotalVolume(new_total_volume);
 
-    // update sessions total volume
     await setSessionTotalVolume(sessionId, new_total_volume);
 
     const entry = { id, diameter, length, sortimentCode, volume, result };
@@ -181,20 +178,18 @@ export default function VolumeScreen() {
 
     appEvents.emit("sessionUpdated");
 
-    // clear inputs
     setDiameter("");
     setLength("");
   };
 
   /* end of helper functions */
 
-  // useeffect for new calulations, change in sortiment code and session logic.
   useEffect(() => {
     calculate();
   }, [diameter, length]);
 
   useEffect(() => {
-    if (!sessionId){
+    if (!sessionId) {
       createOrGetSession();
     }
   }, []);
@@ -204,29 +199,37 @@ export default function VolumeScreen() {
       style={styles.container}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
-
       <View>
         <Text style={{ color: "#4ade80", fontSize: 14, marginBottom: 10 }}>
-          {sessionId ? `Kalkulasjoner lagres i økt ${date_today}` : "Ny økt vil bli opprettet automatisk ved første kalkulasjon eller ny dato"}
+          {sessionId
+            ? `Kalkulasjoner lagres i økt ${date_today}`
+            : "Ny økt vil bli opprettet automatisk ved første kalkulasjon eller ny dato"}
         </Text>
       </View>
 
       {/* SORTIMENT DROPDOWN */}
-      <View style={styles.dropdownBox}>
+      <View style={[styles.dropdownBox, sortimentError && styles.dropdownBoxError]}>
         <Text style={styles.dropdownLabel}>Sortiment (kode)</Text>
 
         <Picker
           selectedValue={sortimentCode}
-          onValueChange={(val) => setSortimentCode(val)}
+          onValueChange={(val) => {
+            setSortimentTouched(true);
+            setSortimentCode(val);
+            if (val) setSortimentError(false);
+          }}
           dropdownIconColor="#fff"
           style={styles.dropdown}
         >
-          <Picker.Item label="Velg sortiment" value=""/>
-
+          <Picker.Item label="Velg sortiment" value="" />
           {SORTIMENT_LIST.map((s) => (
             <Picker.Item key={s.value} label={s.label} value={s.value} />
           ))}
         </Picker>
+
+        {sortimentError && (
+          <Text style={styles.errorText}>Du må velge sortimentkode før du lagrer.</Text>
+        )}
       </View>
 
       <View style={styles.metricsContainer}>
@@ -240,10 +243,8 @@ export default function VolumeScreen() {
               setDiameter("");
               return;
             }
-
             const num = Number(text);
             if (isNaN(num) || num < 0) return;
-
             setDiameter(text);
           }}
           keyboardType="numeric"
@@ -259,10 +260,8 @@ export default function VolumeScreen() {
               setLength("");
               return;
             }
-
             const num = Number(text);
             if (isNaN(num) || num < 0) return;
-
             setLength(text);
           }}
           keyboardType="numeric"
@@ -276,24 +275,25 @@ export default function VolumeScreen() {
 
       <View style={styles.buttonContainer}>
         {/* ADD */}
-        <TouchableOpacity style={styles.button} onPress={handleAddToList}>
+        <TouchableOpacity
+          style={[styles.button, (!sortimentCode || !result) && styles.buttonDisabled]}
+          onPress={handleAddToList}
+          activeOpacity={0.9}
+          disabled={!sortimentCode || !result}
+        >
           <MaterialCommunityIcons name="plus" size={30} color="#fff" />
           <Text style={styles.buttonLabel}>Lagre kalkulasjon</Text>
         </TouchableOpacity>
 
-        {/* "MENU" BUTTON (clear list) */}
+        {/* CLEAR LIST */}
         <TouchableOpacity style={styles.addButton} onPress={() => setShowModalToDeleteList(true)}>
           <MaterialCommunityIcons name="trash-can-outline" size={30} color="#ff5533ff" />
         </TouchableOpacity>
       </View>
 
       <View style={styles.summaryCard}>
-        <Text style={styles.summaryLabel}>
-          Totalt volum for {date_today}
-        </Text>
-        <Text style={styles.summaryValue}>
-          {totalVolume?.toFixed(2) || 0} m³
-        </Text>
+        <Text style={styles.summaryLabel}>Totalt volum for {date_today}</Text>
+        <Text style={styles.summaryValue}>{totalVolume?.toFixed(2) || 0} m³</Text>
       </View>
 
       <FlatList
@@ -306,17 +306,13 @@ export default function VolumeScreen() {
             </Text>
 
             <TouchableOpacity onPress={() => confirmDeleteIndex(index)}>
-              <MaterialCommunityIcons
-                name="trash-can-outline"
-                size={22}
-                color="#ff5533ff"
-              />
+              <MaterialCommunityIcons name="trash-can-outline" size={22} color="#ff5533ff" />
             </TouchableOpacity>
           </View>
         )}
       />
 
-      {/* Delete Confirmation Modals, better ways to do this but its ok for now */}
+      {/* Delete Confirmation Modals */}
       <ConfirmDeleteModal
         visible={showModalToDeleteIndex}
         message="Vil du virkelig slette dette elementet?"
@@ -341,8 +337,6 @@ const styles = StyleSheet.create({
     paddingVertical: 36,
   },
 
-  /* --- INPUT AREA --- */
-
   dropdownBox: {
     backgroundColor: "#151515",
     borderRadius: 14,
@@ -351,6 +345,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.08)",
+  },
+  dropdownBoxError: {
+    borderColor: "rgba(255, 60, 60, 0.7)",
+    backgroundColor: "rgba(255, 60, 60, 0.06)",
   },
   dropdownLabel: {
     color: "#9ca3af",
@@ -361,6 +359,13 @@ const styles = StyleSheet.create({
   dropdown: {
     color: "#fff",
     fontSize: 16,
+  },
+  errorText: {
+    color: "#ff6b6b",
+    fontSize: 12,
+    fontWeight: "700",
+    paddingTop: 6,
+    paddingLeft: 2,
   },
 
   metricsContainer: {
@@ -379,7 +384,6 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.08)",
   },
 
-  /* --- RESULT CARD --- */
   resultBox: {
     backgroundColor: "#111",
     padding: 20,
@@ -395,7 +399,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 
-  /* --- BUTTONS --- */
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -415,6 +418,9 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 4,
   },
+  buttonDisabled: {
+    opacity: 0.45,
+  },
   buttonLabel: {
     color: "#0f0f0f",
     fontSize: 16,
@@ -433,7 +439,6 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.07)",
   },
 
-  /* --- VOLUME SUMMARY CARD --- */
   summaryCard: {
     backgroundColor: "#111",
     padding: 18,
@@ -453,7 +458,6 @@ const styles = StyleSheet.create({
     fontWeight: "800",
   },
 
-  /* --- LIST ITEMS --- */
   listItem: {
     backgroundColor: "#151515",
     padding: 16,

@@ -23,7 +23,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top", "left", "right"]}>
       {/* Header (fixed) */}
-      <View style={[styles.topSection, { paddingTop: insets.top + 6 }]}>
+      <View style={[styles.topSection]}>
         <TouchableOpacity onPress={() => router.push("/profile")} activeOpacity={0.85}>
           <HomeScreenGreeting />
         </TouchableOpacity>
@@ -65,19 +65,13 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* Body (single scroll - smooth) */}
-      <ScrollView
+      {/* recent numbers card */}
+      <View
         style={styles.scroll}
-        contentContainerStyle={[
-          styles.scrollContent,
-          { paddingBottom: insets.bottom + 24 },
-        ]}
-        showsVerticalScrollIndicator={false}
-        bounces
       >
         <RecentNumbersCard />
         {/* Add more cards/sections here later without changing structure */}
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -91,15 +85,12 @@ const styles = StyleSheet.create({
   topSection: {
     paddingHorizontal: 20,
     paddingBottom: 12,
-    gap: 12,
-    // subtle separation so it feels like a sticky header
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255,255,255,0.08)",
+    gap: 5,
   },
 
   row: {
     flexDirection: "row",
-    gap: 10,
+    gap: 7,
   },
 
   smallCard: {
@@ -125,9 +116,6 @@ const styles = StyleSheet.create({
 
   scroll: {
     flex: 1,
-  },
-
-  scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 14,
     gap: 12,
